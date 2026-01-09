@@ -1,0 +1,131 @@
+package com.employee.controller;
+
+import com.employee.model.Sale;
+import com.employee.model.Employee;
+import com.employee.model.Customer;
+import com.employee.service.SaleService;
+import com.employee.service.EmployeeService;
+import com.employee.service.CustomerService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Controller
+@RequestMapping("/sales")
+public class SaleController {
+    
+    @Autowired
+    private SaleService saleService;
+    
+    @Autowired
+    private EmployeeService employeeService;
+    
+    @Autowired
+    private CustomerService customerService;
+    
+    @GetMapping
+    public String listSales(Model model,
+                           @RequestParam(required = false) Long employeeId,
+                           @RequestParam(required = false) Long customerId,
+                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<Sale> sales;
+        
+        if (employeeId != null && startDate != null && endDate != null) {
+            sales = saleService.getSalesByDateRange(startDate, endDate)
+                    .stream()
+                    .filter(s -> s.getEmployee().getId().equals(employeeId))
+                    .toList();
+            model.addAttribute("selectedEmployeeId", employeeId);
+        } else if (employeeId != null) {
+            sales = saleService.getSalesByEmployee(employeeId);
+            model.addAttribute("selectedEmployeeId", employeeId);
+        } else if (customerId != null) {
+            sales = saleService.getSalesByCustomer(customerId);
+            model.addAttribute("selectedCustomerId", customerId);
+        } else if (startDate != null && endDate != null) {
+            sales = saleService.getSalesByDateRange(startDate, endDate);
+        } else {
+            sales = saleService.getSalesByDateRange(LocalDate.now().minusDays(30), LocalDate.now());
+        }
+        
+        model.addAttribute("sales", sales);
+        model.addAttribute("employees", employeeService.getActiveEmployees());
+        model.addAttribute("customers", customerService.getActiveCustomers());
+        return "sales/list";
+    }
+    
+    @GetMapping("/new")
+    public String showSaleForm(Model model) {
+        Sale sale = new Sale();
+        sale.setSaleDate(LocalDate.now());
+        model.addAttribute("sale", sale);
+        model.addAttribute("employees", employeeService.getActiveEmployees());
+        model.addAttribute("customers", customerService.getActiveCustomers());
+        return "sales/form";
+    }
+    
+    @GetMapping("/edit/{id}")
+    public String editSale(@PathVariable Long id, Model model) {
+        Sale sale = saleService.getSaleById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
+        model.addAttribute("sale", sale);
+        model.addAttribute("employees", employeeService.getActiveEmployees());
+        model.addAttribute("customers", customerService.getActiveCustomers());
+        return "sales/form";
+    }
+    
+    @PostMapping("/save")
+    public String saveSale(@Valid @ModelAttribute Sale sale,
+                          @RequestParam(required = false) Long employeeId,
+                          @RequestParam(required = false) Long customerId,
+                          BindingResult result,
+                          Model model,
+                          RedirectAttributes redirectAttributes) {
+        if (employeeId != null) {
+            Employee employee = employeeService.getEmployeeById(employeeId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + employeeId));
+            sale.setEmployee(employee);
+        }
+        
+        if (customerId != null) {
+            Customer customer = customerService.getCustomerById(customerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid customer ID: " + customerId));
+            sale.setCustomer(customer);
+        }
+        
+        if (result.hasErrors()) {
+            model.addAttribute("employees", employeeService.getActiveEmployees());
+            model.addAttribute("customers", customerService.getActiveCustomers());
+            return "sales/form";
+        }
+        
+        saleService.saveSale(sale);
+        redirectAttributes.addFlashAttribute("message", "Sale saved successfully!");
+        return "redirect:/sales";
+    }
+    
+    @GetMapping("/delete/{id}")
+    public String deleteSale(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        saleService.deleteSale(id);
+        redirectAttributes.addFlashAttribute("message", "Sale deleted successfully!");
+        return "redirect:/sales";
+    }
+    
+    @GetMapping("/view/{id}")
+    public String viewSale(@PathVariable Long id, Model model) {
+        Sale sale = saleService.getSaleById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
+        model.addAttribute("sale", sale);
+        return "sales/view";
+    }
+}
+
