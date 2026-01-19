@@ -34,6 +34,18 @@ public class SalesTarget {
     @Column(precision = 12, scale = 2)
     private BigDecimal achievedAmount = BigDecimal.ZERO;
     
+    @Column(precision = 12, scale = 2)
+    private BigDecimal baseSalary;
+    
+    @Column(precision = 5, scale = 2)
+    private BigDecimal commissionRate = BigDecimal.ZERO; // Commission percentage (e.g., 5.00 for 5%)
+    
+    @Column(precision = 12, scale = 2)
+    private BigDecimal calculatedSalary;
+    
+    @Column
+    private Boolean salaryCalculated = false;
+    
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
@@ -116,6 +128,38 @@ public class SalesTarget {
         }
         return achievedAmount.divide(targetAmount, 4, java.math.RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
+    }
+    
+    public BigDecimal getBaseSalary() {
+        return baseSalary;
+    }
+    
+    public void setBaseSalary(BigDecimal baseSalary) {
+        this.baseSalary = baseSalary;
+    }
+    
+    public BigDecimal getCommissionRate() {
+        return commissionRate;
+    }
+    
+    public void setCommissionRate(BigDecimal commissionRate) {
+        this.commissionRate = commissionRate;
+    }
+    
+    public BigDecimal getCalculatedSalary() {
+        return calculatedSalary;
+    }
+    
+    public void setCalculatedSalary(BigDecimal calculatedSalary) {
+        this.calculatedSalary = calculatedSalary;
+    }
+    
+    public Boolean getSalaryCalculated() {
+        return salaryCalculated;
+    }
+    
+    public void setSalaryCalculated(Boolean salaryCalculated) {
+        this.salaryCalculated = salaryCalculated;
     }
 }
 

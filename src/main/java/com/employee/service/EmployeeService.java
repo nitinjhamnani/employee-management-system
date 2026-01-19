@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,14 +38,55 @@ public class EmployeeService {
     }
     
     public Employee saveEmployee(Employee employee) {
-        // If password is provided and not already encoded, encode it
-        if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
-            // Check if password is already encoded (starts with $2a$ or $2b$)
-            if (!employee.getPassword().startsWith("$2a$") && !employee.getPassword().startsWith("$2b$")) {
-                employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+        // Generate employee ID (username) for new employees
+        if (employee.getId() == null && (employee.getUsername() == null || employee.getUsername().isEmpty())) {
+            String employeeId = generateEmployeeId();
+            employee.setUsername(employeeId);
+            // Set password same as employee ID
+            employee.setPassword(passwordEncoder.encode(employeeId));
+        } else if (employee.getId() != null) {
+            // For existing employees, only encode password if it's being changed and not already encoded
+            if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
+                // Check if password is already encoded (starts with $2a$ or $2b$)
+                if (!employee.getPassword().startsWith("$2a$") && !employee.getPassword().startsWith("$2b$")) {
+                    employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+                }
+            } else {
+                // If password is empty during edit, don't change it - load existing password
+                Optional<Employee> existingEmployee = employeeRepository.findById(employee.getId());
+                if (existingEmployee.isPresent()) {
+                    employee.setPassword(existingEmployee.get().getPassword());
+                }
             }
         }
+        
+        // Set position from hierarchy level if position is not set
+        if (employee.getPosition() == null || employee.getPosition().isEmpty()) {
+            employee.setPosition(employee.getHierarchyLevel());
+        }
+        
         return employeeRepository.save(employee);
+    }
+    
+    private String generateEmployeeId() {
+        SecureRandom random = new SecureRandom();
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder employeeId = new StringBuilder("PG");
+        
+        // Generate 6 more alphanumeric characters (total 8: PG + 6 chars)
+        for (int i = 0; i < 6; i++) {
+            employeeId.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        
+        // Ensure uniqueness
+        while (employeeRepository.findByUsername(employeeId.toString()) != null) {
+            employeeId = new StringBuilder("PG");
+            for (int i = 0; i < 6; i++) {
+                employeeId.append(chars.charAt(random.nextInt(chars.length())));
+            }
+        }
+        
+        return employeeId.toString();
     }
     
     public void deleteEmployee(Long id) {

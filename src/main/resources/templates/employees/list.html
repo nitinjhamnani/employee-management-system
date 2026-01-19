@@ -47,24 +47,33 @@
                 <table class="table" th:if="${employees != null and !employees.isEmpty()}">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Employee ID</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Department</th>
-                            <th>Position</th>
+                            <th>Location</th>
+                            <th>Hierarchy</th>
+                            <th>Reporting Manager</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="employee : ${employees}">
-                            <td th:text="${employee.id}"></td>
+                            <td>
+                                <strong th:text="${employee.username != null ? employee.username : 'N/A'}">N/A</strong>
+                            </td>
                             <td th:text="${employee.fullName}"></td>
                             <td th:text="${employee.email}"></td>
                             <td th:text="${employee.phone}"></td>
-                            <td th:text="${employee.department}"></td>
-                            <td th:text="${employee.position}"></td>
+                            <td>
+                                <small th:text="${employee.city + ', ' + employee.state}">City, State</small><br>
+                                <small class="text-muted" th:text="${employee.area}">Area</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-info" th:text="${employee.hierarchyLevel}">Hierarchy</span>
+                            </td>
+                            <td th:text="${employee.reportingManager != null ? employee.reportingManager.fullName : '-'}">-</td>
                             <td>
                                 <span class="badge" 
                                       th:classappend="${employee.status == 'ACTIVE'} ? 'badge-success' : 'badge-danger'"

@@ -38,19 +38,37 @@ public class Employee {
     @Column(nullable = false)
     private String phone;
     
-    @NotBlank(message = "Department is required")
-    @Column(nullable = false)
+    @Column
     private String department;
     
-    @NotBlank(message = "Position is required")
-    @Column(nullable = false)
+    @Column
     private String position;
+    
+    @NotBlank(message = "State is required")
+    @Column(nullable = false)
+    private String state;
+    
+    @NotBlank(message = "City is required")
+    @Column(nullable = false)
+    private String city;
+    
+    @NotBlank(message = "Area is required")
+    @Column(nullable = false)
+    private String area;
+    
+    @NotBlank(message = "Hierarchy level is required")
+    @Column(nullable = false)
+    private String hierarchyLevel; // PROMOTER, ZONAL_HEAD, CLUSTER_HEAD, AREA_SALES_MANAGER
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporting_manager_id")
+    private Employee reportingManager;
     
     @NotNull(message = "Hire date is required")
     @Column(nullable = false)
     private LocalDate hireDate;
     
-    @Column(nullable = false)
+    @Column
     private Double salary;
     
     @Column(nullable = false)
@@ -182,6 +200,46 @@ public class Employee {
     
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public String getState() {
+        return state;
+    }
+    
+    public void setState(String state) {
+        this.state = state;
+    }
+    
+    public String getCity() {
+        return city;
+    }
+    
+    public void setCity(String city) {
+        this.city = city;
+    }
+    
+    public String getArea() {
+        return area;
+    }
+    
+    public void setArea(String area) {
+        this.area = area;
+    }
+    
+    public String getHierarchyLevel() {
+        return hierarchyLevel;
+    }
+    
+    public void setHierarchyLevel(String hierarchyLevel) {
+        this.hierarchyLevel = hierarchyLevel;
+    }
+    
+    public Employee getReportingManager() {
+        return reportingManager;
+    }
+    
+    public void setReportingManager(Employee reportingManager) {
+        this.reportingManager = reportingManager;
     }
 }
 

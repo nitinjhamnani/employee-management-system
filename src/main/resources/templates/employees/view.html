@@ -42,6 +42,10 @@
                         <h5>Personal Information</h5>
                         <table class="table">
                             <tr>
+                                <th>Employee ID:</th>
+                                <td><strong th:text="${employee.username != null ? employee.username : 'N/A'}">N/A</strong></td>
+                            </tr>
+                            <tr>
                                 <th>Name:</th>
                                 <td th:text="${employee.fullName}"></td>
                             </tr>
@@ -67,20 +71,50 @@
                         <h5>Employment Information</h5>
                         <table class="table">
                             <tr>
+                                <th>Hierarchy Level:</th>
+                                <td>
+                                    <span class="badge badge-info" th:text="${employee.hierarchyLevel}">Hierarchy</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Position:</th>
+                                <td th:text="${employee.position != null ? employee.position : employee.hierarchyLevel}"></td>
+                            </tr>
+                            <tr th:if="${employee.department != null}">
                                 <th>Department:</th>
                                 <td th:text="${employee.department}"></td>
                             </tr>
                             <tr>
-                                <th>Position:</th>
-                                <td th:text="${employee.position}"></td>
+                                <th>Reporting Manager:</th>
+                                <td th:text="${employee.reportingManager != null ? employee.reportingManager.fullName + ' (' + employee.reportingManager.hierarchyLevel + ')' : 'None'}">None</td>
                             </tr>
                             <tr>
                                 <th>Hire Date:</th>
                                 <td th:text="${#temporals.format(employee.hireDate, 'yyyy-MM-dd')}"></td>
                             </tr>
-                            <tr>
+                            <tr th:if="${employee.salary != null}">
                                 <th>Salary:</th>
                                 <td th:text="${'$' + #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT')}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h5>Location Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>State:</th>
+                                <td th:text="${employee.state}"></td>
+                            </tr>
+                            <tr>
+                                <th>City:</th>
+                                <td th:text="${employee.city}"></td>
+                            </tr>
+                            <tr>
+                                <th>Area:</th>
+                                <td th:text="${employee.area}"></td>
                             </tr>
                         </table>
                     </div>

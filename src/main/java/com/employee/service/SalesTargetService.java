@@ -24,6 +24,9 @@ public class SalesTargetService {
     @Autowired
     private SaleRepository saleRepository;
     
+    @Autowired
+    private EmployeeService employeeService;
+    
     public List<SalesTarget> getSalesTargetsByEmployee(Employee employee) {
         return salesTargetRepository.findByEmployeeOrderByPeriodStartDesc(employee);
     }
@@ -66,6 +69,101 @@ public class SalesTargetService {
         List<SalesTarget> targets = salesTargetRepository.findAll();
         for (SalesTarget target : targets) {
             updateAchievedAmount(target);
+        }
+    }
+    
+    public List<SalesTarget> getAllSalesTargets() {
+        return salesTargetRepository.findAll();
+    }
+    
+    public List<SalesTarget> getSalesTargetsByDateRange(LocalDate startDate, LocalDate endDate) {
+        return salesTargetRepository.findAll().stream()
+                .filter(target -> !target.getPeriodStart().isAfter(endDate) && !target.getPeriodEnd().isBefore(startDate))
+                .toList();
+    }
+    
+    public void calculateAndUpdateSalary(SalesTarget salesTarget) {
+        // Update achieved amount first
+        updateAchievedAmount(salesTarget);
+        
+        // Calculate salary based on target achievement
+        BigDecimal calculatedSalary = calculateSalary(salesTarget);
+        salesTarget.setCalculatedSalary(calculatedSalary);
+        
+        // Mark as calculated if target is achieved
+        if (salesTarget.getProgressPercentage().compareTo(BigDecimal.valueOf(100)) >= 0) {
+            salesTarget.setSalaryCalculated(true);
+        }
+        
+        salesTargetRepository.save(salesTarget);
+        
+        // Update employee salary if target is achieved
+        if (salesTarget.getEmployee() != null && salesTarget.getProgressPercentage().compareTo(BigDecimal.valueOf(100)) >= 0) {
+            Employee employee = salesTarget.getEmployee();
+            employee.setSalary(calculatedSalary.doubleValue());
+            employeeService.saveEmployee(employee);
+        }
+    }
+    
+    public void calculateSalariesForCompletedMonths() {
+        LocalDate today = LocalDate.now();
+        List<SalesTarget> targets = salesTargetRepository.findAll();
+        
+        for (SalesTarget target : targets) {
+            // Only calculate for targets that have ended and haven't been calculated yet
+            if (target.getPeriodEnd().isBefore(today) && !Boolean.TRUE.equals(target.getSalaryCalculated())) {
+                calculateAndUpdateSalary(target);
+            }
+        }
+    }
+    
+    public void recalculateAllSalaries() {
+        List<SalesTarget> targets = salesTargetRepository.findAll();
+        for (SalesTarget target : targets) {
+            updateAchievedAmount(target);
+            // Calculate salary if target is achieved
+            if (target.getProgressPercentage().compareTo(BigDecimal.valueOf(100)) >= 0 
+                    && !Boolean.TRUE.equals(target.getSalaryCalculated())) {
+                BigDecimal calculatedSalary = calculateSalary(target);
+                target.setCalculatedSalary(calculatedSalary);
+                target.setSalaryCalculated(true);
+                
+                // Update employee salary
+                if (target.getEmployee() != null) {
+                    Employee employee = target.getEmployee();
+                    employee.setSalary(calculatedSalary.doubleValue());
+                    employeeService.saveEmployee(employee);
+                }
+            }
+        }
+    }
+    
+    private BigDecimal calculateSalary(SalesTarget salesTarget) {
+        BigDecimal base = salesTarget.getBaseSalary() != null 
+                ? salesTarget.getBaseSalary() 
+                : BigDecimal.ZERO;
+        
+        if (salesTarget.getTargetAmount() == null || salesTarget.getTargetAmount().compareTo(BigDecimal.ZERO) == 0) {
+            return base;
+        }
+        
+        BigDecimal progressPercentage = salesTarget.getProgressPercentage();
+        
+        // If target is achieved (100% or more), add commission
+        if (progressPercentage.compareTo(BigDecimal.valueOf(100)) >= 0) {
+            BigDecimal commissionRate = salesTarget.getCommissionRate() != null 
+                    ? salesTarget.getCommissionRate() 
+                    : BigDecimal.ZERO;
+            
+            // Calculate commission: commissionRate% of achieved amount
+            BigDecimal commission = salesTarget.getAchievedAmount()
+                    .multiply(commissionRate)
+                    .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+            
+            return base.add(commission);
+        } else {
+            // If target not achieved, return base salary only
+            return base;
         }
     }
 }

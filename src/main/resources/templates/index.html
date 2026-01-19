@@ -31,6 +31,9 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/sales}">Sales</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/sales-targets}">Sales Targets</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -101,6 +104,26 @@
                 </table>
                 <div class="empty-state" th:if="${recentSales == null or recentSales.isEmpty()}">
                     <p>No recent sales found.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">Quick Actions</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a th:href="@{/admin/sales-targets}" class="btn btn-primary w-100">Manage Sales Targets</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a th:href="@{/employees}" class="btn btn-secondary w-100">Manage Employees</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a th:href="@{/sales}" class="btn btn-info w-100">View All Sales</a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a th:href="@{/customers}" class="btn btn-success w-100">Manage Customers</a>
+                    </div>
                 </div>
             </div>
         </div>
