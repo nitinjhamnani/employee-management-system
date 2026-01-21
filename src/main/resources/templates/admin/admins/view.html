@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Details - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Employee Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/admins}">Admins</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/employees}">Employees</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/attendances}">Attendance</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/customers}">Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/sales}">Sales</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Admin Details</h1>
+            <div>
+                <a th:href="@{/admin/admins/edit/{id}(id=${admin.id})}" class="btn btn-warning">Edit</a>
+                <a th:href="@{/admin/admins}" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Personal Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>ID:</th>
+                                <td><strong th:text="${admin.id}"></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Username:</th>
+                                <td><strong th:text="${admin.username}"></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Name:</th>
+                                <td th:text="${admin.fullName}"></td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td th:text="${admin.email}"></td>
+                            </tr>
+                            <tr>
+                                <th>Phone:</th>
+                                <td th:text="${admin.phone != null ? admin.phone : '-'}">-</td>
+                            </tr>
+                            <tr>
+                                <th>Department:</th>
+                                <td th:text="${admin.department != null ? admin.department : '-'}">-</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Role & Status</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Role:</th>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${admin.role == 'SUPER_ADMIN'} ? 'badge-danger' : (${admin.role == 'ADMIN'} ? 'badge-warning' : 'badge-info')"
+                                          th:text="${admin.role}"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${admin.status == 'ACTIVE'} ? 'badge-success' : 'badge-danger'"
+                                          th:text="${admin.status}"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Parent Admin:</th>
+                                <td th:text="${admin.parentAdmin != null ? admin.parentAdmin.fullName + ' (' + admin.parentAdmin.role + ')' : '-'}">-</td>
+                            </tr>
+                            <tr>
+                                <th>Created At:</th>
+                                <td th:text="${#temporals.format(admin.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            </tr>
+                            <tr>
+                                <th>Updated At:</th>
+                                <td th:text="${#temporals.format(admin.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row mt-3" th:if="${admin.permissions != null and !admin.permissions.isEmpty()}">
+                    <div class="col-md-12">
+                        <h5>Permissions</h5>
+                        <div class="alert alert-info">
+                            <pre th:text="${admin.permissions}"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3" th:if="${subAdmins != null and !subAdmins.isEmpty()}">
+                    <div class="col-md-12">
+                        <h5>Sub-Admins</h5>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="subAdmin : ${subAdmins}">
+                                    <td><strong th:text="${subAdmin.username}"></strong></td>
+                                    <td th:text="${subAdmin.fullName}"></td>
+                                    <td th:text="${subAdmin.email}"></td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${subAdmin.role == 'SUPER_ADMIN'} ? 'badge-danger' : (${subAdmin.role == 'ADMIN'} ? 'badge-warning' : 'badge-info')"
+                                              th:text="${subAdmin.role}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${subAdmin.status == 'ACTIVE'} ? 'badge-success' : 'badge-danger'"
+                                              th:text="${subAdmin.status}"></span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/admin/admins/view/{id}(id=${subAdmin.id})}" class="btn btn-info btn-sm">View</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
