@@ -13,7 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/employees")
+@RequestMapping("/admin/employees")
 public class EmployeeController {
     
     @Autowired

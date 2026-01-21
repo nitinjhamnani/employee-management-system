@@ -19,7 +19,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                                         Authentication authentication) throws IOException, ServletException {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         
-        String redirectUrl = "/login";
+        String redirectUrl = "/employee/login";
         
         // Check if user has ADMIN role
         boolean isAdmin = authorities.stream()
@@ -30,7 +30,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_EMPLOYEE"));
         
         if (isAdmin) {
-            redirectUrl = "/";
+            redirectUrl = "/admin";
         } else if (isEmployee) {
             redirectUrl = "/employee/dashboard";
         }

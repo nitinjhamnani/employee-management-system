@@ -64,7 +64,7 @@
                 <span th:text="${message}"></span>
             </div>
             
-            <form th:action="@{/login}" method="post">
+            <form th:action="@{/employee/login}" method="post">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
                     <input type="text" class="form-control" id="username" name="username" required autofocus>
@@ -79,7 +79,7 @@
             </form>
             
             <div class="text-center">
-                <a th:href="@{/login}" class="text-muted text-decoration-none">Employee Login</a>
+                <a th:href="@{/employee/login}" class="text-muted text-decoration-none">Employee Login</a>
             </div>
             
             <div class="text-center mt-3">

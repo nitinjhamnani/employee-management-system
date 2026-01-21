@@ -17,7 +17,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" th:href="@{/}">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/employees}">Employees</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/employees}">Employees</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/attendances}">Attendance</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/customers}">Customers</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/sales}">Sales</a></li>
@@ -31,7 +31,7 @@
             <h1>Employee Details</h1>
             <div>
                 <a th:href="@{/employees/edit/{id}(id=${employee.id})}" class="btn btn-warning">Edit</a>
-                <a th:href="@{/employees}" class="btn btn-secondary">Back to List</a>
+                <a th:href="@{/admin/employees}" class="btn btn-secondary">Back to List</a>
             </div>
         </div>
 

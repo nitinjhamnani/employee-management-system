@@ -70,6 +70,47 @@ body {
     padding: 0 1.5rem;
 }
 
+.top-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.top-header .mobile-menu-toggle,
+.top-header .sidebar-expand-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.top-header .mobile-menu-toggle:hover,
+.top-header .sidebar-expand-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.top-header .sidebar-expand-toggle {
+    display: none; /* Hidden on mobile */
+}
+
+@media (min-width: 769px) {
+    .top-header .sidebar-expand-toggle {
+        display: flex; /* Show on desktop */
+    }
+    
+    .top-header .mobile-menu-toggle {
+        display: none; /* Hide mobile menu toggle on desktop */
+    }
+}
+
 .top-header .company-name {
     color: #fff;
     font-size: 1.25rem;
@@ -132,31 +173,9 @@ body {
     background: #a8a8a8;
 }
 
+/* Sidebar toggle button removed - now in header */
 .sidebar-toggle {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 10;
-}
-
-.sidebar-toggle:hover {
-    background: var(--primary-dark);
-    transform: scale(1.1);
-}
-
-.sidebar.collapsed .sidebar-toggle {
-    right: 0.5rem;
+    display: none;
 }
 
 .sidebar-menu {
@@ -287,29 +306,7 @@ body {
         width: 100%;
     }
     
-    .mobile-menu-toggle {
-        display: block;
-        position: fixed;
-        top: 0.75rem;
-        left: 1rem;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-md);
-        cursor: pointer;
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-}
-
-@media (min-width: 769px) {
-    .mobile-menu-toggle {
-        display: none;
-    }
+    /* Mobile menu toggle is now in header, no need for fixed positioning */
 }
 
 /* ============================================

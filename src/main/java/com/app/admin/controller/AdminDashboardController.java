@@ -31,8 +31,8 @@ public class AdminDashboardController {
     @Autowired
     private SaleService saleService;
     
-    @GetMapping("/")
-    public String home(Model model) {
+    @GetMapping("/admin")
+    public String adminDashboard(Model model) {
         List<Employee> employees = employeeService.getAllEmployees();
         List<Attendance> todayAttendances = attendanceService.getAttendancesByDate(LocalDate.now());
         List<Customer> customers = customerService.getAllCustomers();

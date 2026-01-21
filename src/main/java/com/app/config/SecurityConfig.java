@@ -8,9 +8,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
@@ -23,25 +23,35 @@ public class SecurityConfig {
     @Autowired
     private AuthenticationSuccessHandler authenticationSuccessHandler;
     
+    @Autowired
+    private AuthenticationFailureHandler authenticationFailureHandler;
+    
+    @Autowired
+    private AuthenticationEntryPoint authenticationEntryPoint;
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/admin/login", "/logout", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                .requestMatchers("/", "/employee/login", "/admin/login", "/logout", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                 .requestMatchers("/employee/**").hasRole("EMPLOYEE")
-                .requestMatchers("/", "/employees/**", "/customers/**", "/attendances/**", "/sales/**", "/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(authenticationEntryPoint)
+            )
             .formLogin(form -> form
-                .loginPage("/login")
+                .loginPage("/employee/login")
+                .loginProcessingUrl("/employee/login")
                 .successHandler(authenticationSuccessHandler)
-                .failureUrl("/login?error=true")
+                .failureHandler(authenticationFailureHandler)
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout=true")
+                .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()

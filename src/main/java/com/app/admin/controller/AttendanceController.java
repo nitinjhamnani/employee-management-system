@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Controller
-@RequestMapping("/attendances")
+@RequestMapping("/admin/attendances")
 public class AttendanceController {
     
     @Autowired

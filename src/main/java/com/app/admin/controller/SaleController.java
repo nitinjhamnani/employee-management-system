@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Controller
-@RequestMapping("/sales")
+@RequestMapping("/admin/sales")
 public class SaleController {
     
     @Autowired

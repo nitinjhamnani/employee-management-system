@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class AuthController {
     
-    @GetMapping("/login")
+    @GetMapping("/employee/login")
     public String login(@RequestParam(value = "error", required = false) String error,
                        @RequestParam(value = "logout", required = false) String logout,
                        Model model) {
@@ -18,7 +18,7 @@ public class AuthController {
         if (logout != null) {
             model.addAttribute("message", "You have been logged out successfully.");
         }
-        return "auth/login";
+        return "employee/login";
     }
     
     @GetMapping("/admin/login")
