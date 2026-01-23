@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${admin.id != null ? 'Edit Admin' : 'Add Admin'}">Admin Form - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+
+        <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <div class="container">
+        <h1 class="mb-4" th:text="${admin.id != null ? 'Edit Admin' : 'Add New Admin'}">Add Admin</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/admin/admins/save}" th:object="${admin}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" class="form-control" th:field="*{firstName}" required>
+                                <span class="text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" th:field="*{lastName}" required>
+                                <span class="text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-control" th:field="*{email}" required>
+                                <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Username *</label>
+                                <input type="text" class="form-control" th:field="*{username}" required th:readonly="${admin.id != null}">
+                                <small class="form-text text-muted" th:if="${admin.id == null}">Username cannot be changed after creation</small>
+                                <span class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Password <span th:if="${admin.id == null}">*</span></label>
+                                <input type="password" class="form-control" name="password" th:required="${admin.id == null}" th:placeholder="${admin.id != null ? 'Leave blank to keep current password' : ''}">
+                                <small class="form-text text-muted" th:if="${admin.id != null}">Leave blank to keep current password</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="text" class="form-control" th:field="*{phone}">
+                                <span class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Department</label>
+                                <input type="text" class="form-control" th:field="*{department}" placeholder="e.g., Administration">
+                                <span class="text-danger" th:if="${#fields.hasErrors('department')}" th:errors="*{department}"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Role *</label>
+                                <select class="form-select" th:field="*{role}" required>
+                                    <option value="">-- Select Role --</option>
+                                    <option value="SUPER_ADMIN">Super Admin</option>
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="SUB_ADMIN">Sub Admin</option>
+                                </select>
+                                <small class="form-text text-muted">Super Admin has full access. Sub Admin can have restricted access based on parent admin.</small>
+                                <span class="text-danger" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Status *</label>
+                                <select class="form-select" th:field="*{status}" required>
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="INACTIVE">INACTIVE</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">Parent Admin</label>
+                                <select class="form-select" name="parentAdminId">
+                                    <option value="">-- No Parent Admin --</option>
+                                    <option th:each="parentAdmin : ${parentAdmins}" 
+                                            th:value="${parentAdmin.id}" 
+                                            th:text="${parentAdmin.fullName + ' (' + parentAdmin.role + ')'}"
+                                            th:selected="${admin.parentAdmin != null and admin.parentAdmin.id == parentAdmin.id}">
+                                    </option>
+                                </select>
+                                <small class="form-text text-muted">Select parent admin for sub-admins. This creates a hierarchy.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">Permissions</label>
+                                <textarea class="form-control" th:field="*{permissions}" rows="3" placeholder="Comma-separated permissions or JSON"></textarea>
+                                <small class="form-text text-muted">Optional: Specify permissions for this admin (e.g., "EMPLOYEE_MANAGEMENT,CUSTOMER_MANAGEMENT" or JSON format)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Save Admin</button>
+                        <a th:href="@{/admin/admins}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+</body>
+</html>

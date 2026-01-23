@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${attendance.id != null ? 'Edit Attendance' : 'Add Attendance'}">Attendance Form - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Employee Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/employees}">Employees</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/attendances}">Attendance</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/customers}">Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/sales}">Sales</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="mb-4" th:text="${attendance.id != null ? 'Edit Attendance' : 'Add Attendance'}">Add Attendance</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/attendances/save}" th:object="${attendance}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Employee *</label>
+                        <select class="form-select" name="employeeId" required>
+                            <option value="">Select Employee</option>
+                            <option th:each="emp : ${employees}" 
+                                    th:value="${emp.id}" 
+                                    th:text="${emp.fullName}"
+                                    th:selected="${attendance != null and attendance.employee != null and attendance.employee.id == emp.id}"></option>
+                        </select>
+                        <span class="text-danger" th:if="${#fields.hasErrors('employee')}" th:errors="*{employee}"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Date *</label>
+                                <input type="date" class="form-control" th:field="*{date}" required>
+                                <span class="text-danger" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Check In</label>
+                                <input type="datetime-local" class="form-control" th:field="*{checkIn}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Check Out</label>
+                                <input type="datetime-local" class="form-control" th:field="*{checkOut}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Status *</label>
+                                <select class="form-select" th:field="*{status}" required>
+                                    <option value="PRESENT">PRESENT</option>
+                                    <option value="ABSENT">ABSENT</option>
+                                    <option value="LATE">LATE</option>
+                                    <option value="ON_LEAVE">ON_LEAVE</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" rows="3" th:field="*{notes}"></textarea>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Save Attendance</button>
+                        <a th:href="@{/admin/attendances}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
