@@ -67,6 +67,41 @@
                         </table>
                     </div>
                     <div class="col-md-6">
+                        <h5>Hierarchy Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Promoter:</th>
+                                <td>
+                                    <span th:if="${promoter != null}" th:text="${promoter.fullName + ' (' + promoter.username + ')'}">-</span>
+                                    <span th:if="${promoter == null}" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Zonal Head:</th>
+                                <td>
+                                    <span th:if="${zonalHead != null}" th:text="${zonalHead.fullName + ' (' + zonalHead.username + ')'}">-</span>
+                                    <span th:if="${zonalHead == null}" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Cluster Head:</th>
+                                <td>
+                                    <span th:if="${clusterHead != null}" th:text="${clusterHead.fullName + ' (' + clusterHead.username + ')'}">-</span>
+                                    <span th:if="${clusterHead == null}" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Area Sales Manager:</th>
+                                <td>
+                                    <span th:if="${areaSalesManager != null}" th:text="${areaSalesManager.fullName + ' (' + areaSalesManager.username + ')'}">-</span>
+                                    <span th:if="${areaSalesManager == null}" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-12">
                         <h5>Address Information</h5>
                         <table class="table">
                             <tr>

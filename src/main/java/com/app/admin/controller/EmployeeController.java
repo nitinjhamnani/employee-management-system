@@ -112,13 +112,14 @@ public class EmployeeController {
         return "admin/employees/view";
     }
 
-    @GetMapping("/{type}/delete/{id}")
-    public String delete(@PathVariable String type, @PathVariable Long id, RedirectAttributes ra) {
-        hierarchyFor(type);
-        employeeService.deleteEmployee(id);
-        ra.addFlashAttribute("message", labelFor(type) + " deleted successfully!");
-        return "redirect:/admin/employees/" + type;
-    }
+    // Delete functionality removed - employees cannot be deleted, only inactivated
+    // @GetMapping("/{type}/delete/{id}")
+    // public String delete(@PathVariable String type, @PathVariable Long id, RedirectAttributes ra) {
+    //     hierarchyFor(type);
+    //     employeeService.deleteEmployee(id);
+    //     ra.addFlashAttribute("message", labelFor(type) + " deleted successfully!");
+    //     return "redirect:/admin/employees/" + type;
+    // }
 
     @PostMapping("/{type}/save")
     public String save(@PathVariable String type,

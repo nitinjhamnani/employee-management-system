@@ -31,6 +31,10 @@ public class SalesTargetService {
         return salesTargetRepository.findByEmployeeOrderByPeriodStartDesc(employee);
     }
     
+    public List<SalesTarget> getSalesTargetsByEmployeeAndProduct(Employee employee, com.app.model.Product product) {
+        return salesTargetRepository.findByEmployeeAndProduct(employee, product);
+    }
+    
     public Optional<SalesTarget> getCurrentSalesTarget(Employee employee) {
         LocalDate today = LocalDate.now();
         return salesTargetRepository.findByEmployeeAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
@@ -55,6 +59,13 @@ public class SalesTargetService {
         
         List<Sale> sales = saleRepository.findByEmployeeAndSaleDateBetween(
                 salesTarget.getEmployee(), startDate, endDate);
+        
+        // If target is product-specific, filter by product
+        if (salesTarget.getProduct() != null) {
+            sales = sales.stream()
+                    .filter(s -> s.getProduct() != null && s.getProduct().getId().equals(salesTarget.getProduct().getId()))
+                    .toList();
+        }
         
         BigDecimal total = sales.stream()
                 .filter(s -> "COMPLETED".equals(s.getStatus()))

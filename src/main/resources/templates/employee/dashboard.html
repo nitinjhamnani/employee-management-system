@@ -131,8 +131,14 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <p><strong>Target Amount:</strong> $<span th:text="${#numbers.formatDecimal(currentTarget.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
-                                <p><strong>Achieved Amount:</strong> $<span th:text="${#numbers.formatDecimal(currentTarget.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
+                                <p th:if="${currentTarget.product != null}">
+                                    <strong>Product:</strong> <span th:text="${currentTarget.product.name + ' (' + currentTarget.product.productId + ')'}">Product</span>
+                                </p>
+                                <p th:if="${currentTarget.targetUnits != null}">
+                                    <strong>Target Units:</strong> <span th:text="${currentTarget.targetUnits}">0</span> units
+                                </p>
+                                <p><strong>Target Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(currentTarget.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
+                                <p><strong>Achieved Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(currentTarget.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
                                 <p><strong>Period:</strong> <span th:text="${#temporals.format(currentTarget.periodStart, 'yyyy-MM-dd')}">Start</span> to <span th:text="${#temporals.format(currentTarget.periodEnd, 'yyyy-MM-dd')}">End</span></p>
                             </div>
                             <div class="col-md-6">

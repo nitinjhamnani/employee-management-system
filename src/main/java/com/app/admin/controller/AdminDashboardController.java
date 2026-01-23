@@ -13,8 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class AdminDashboardController {
@@ -42,12 +44,32 @@ public class AdminDashboardController {
         long presentToday = todayAttendances.stream().filter(a -> "PRESENT".equals(a.getStatus())).count();
         long activeCustomers = customers.stream().filter(c -> "ACTIVE".equals(c.getStatus())).count();
         
+        // Calculate revenue by product for different periods
+        LocalDate today = LocalDate.now();
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        LocalDate startOfQuarter = today.withMonth(((today.getMonthValue() - 1) / 3) * 3 + 1).withDayOfMonth(1);
+        
+        Map<String, BigDecimal> dailyRevenue = saleService.getRevenueByProduct(today, today);
+        Map<String, BigDecimal> monthlyRevenue = saleService.getRevenueByProduct(startOfMonth, today);
+        Map<String, BigDecimal> quarterlyRevenue = saleService.getRevenueByProduct(startOfQuarter, today);
+        
+        // Calculate totals
+        BigDecimal dailyTotal = dailyRevenue.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal monthlyTotal = monthlyRevenue.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal quarterlyTotal = quarterlyRevenue.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        
         model.addAttribute("totalEmployees", employees.size());
         model.addAttribute("activeEmployees", activeEmployees);
         model.addAttribute("presentToday", presentToday);
         model.addAttribute("totalCustomers", customers.size());
         model.addAttribute("activeCustomers", activeCustomers);
         model.addAttribute("recentSales", recentSales);
+        model.addAttribute("dailyRevenue", dailyRevenue);
+        model.addAttribute("monthlyRevenue", monthlyRevenue);
+        model.addAttribute("quarterlyRevenue", quarterlyRevenue);
+        model.addAttribute("dailyTotal", dailyTotal);
+        model.addAttribute("monthlyTotal", monthlyTotal);
+        model.addAttribute("quarterlyTotal", quarterlyTotal);
         
         return "admin/index";
     }

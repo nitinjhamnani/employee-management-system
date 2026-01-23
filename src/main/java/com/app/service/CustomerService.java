@@ -109,13 +109,40 @@ public class CustomerService {
     private EmployeeService employeeService;
     
     /**
+     * Gets all customers visible to the given employee.
+     * Employees can see customers:
+     * 1. Assigned to them (based on hierarchy fields)
+     * 2. Created by them (based on createdBy field)
+     */
+    public List<Customer> getCustomersForEmployee(Employee employee) {
+        if (employee == null || employee.getId() == null) {
+            return List.of();
+        }
+        
+        // Get customers assigned based on hierarchy
+        List<Customer> assignedCustomers = getCustomersForEmployeeByHierarchy(employee);
+        
+        // Get customers created by this employee
+        String employeeIdentifier = "EMPLOYEE:" + employee.getUsername();
+        List<Customer> createdCustomers = customerRepository.findAll().stream()
+                .filter(c -> employeeIdentifier.equals(c.getCreatedBy()))
+                .toList();
+        
+        // Combine and remove duplicates
+        java.util.Set<Customer> allCustomers = new java.util.HashSet<>(assignedCustomers);
+        allCustomers.addAll(createdCustomers);
+        
+        return allCustomers.stream().toList();
+    }
+    
+    /**
      * Gets all customers visible to the given employee based on their hierarchy level.
      * - Promoter: Customers where promoterId = employee.id
      * - Zonal Head: Customers where zonalHeadId = employee.id OR (clusterHeadId in reporting cluster heads OR areaSalesManagerId in reporting ASMs)
      * - Cluster Head: Customers where clusterHeadId = employee.id OR areaSalesManagerId in reporting ASMs
      * - Area Sales Manager: Customers where areaSalesManagerId = employee.id
      */
-    public List<Customer> getCustomersForEmployee(Employee employee) {
+    private List<Customer> getCustomersForEmployeeByHierarchy(Employee employee) {
         if (employee == null || employee.getId() == null) {
             return List.of();
         }

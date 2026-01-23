@@ -132,9 +132,16 @@ public class EmployeeDashboardController {
         List<SalesTarget> targets = salesTargetService.getSalesTargetsByEmployee(employee);
         Optional<SalesTarget> currentTarget = salesTargetService.getCurrentSalesTarget(employee);
         
+        // Calculate accumulated commission for ASM
+        java.math.BigDecimal totalCommission = java.math.BigDecimal.ZERO;
+        if ("AREA_SALES_MANAGER".equals(employee.getHierarchyLevel())) {
+            totalCommission = saleService.getTotalAccumulatedCommission(employee.getId());
+        }
+        
         model.addAttribute("employee", employee);
         model.addAttribute("targets", targets);
         model.addAttribute("currentTarget", currentTarget.orElse(null));
+        model.addAttribute("totalCommission", totalCommission);
         
         return "employee/sales-target";
     }

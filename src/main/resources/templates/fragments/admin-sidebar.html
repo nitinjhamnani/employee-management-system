@@ -94,6 +94,11 @@
                 </a>
             </li>
 
+                <a class="sidebar-menu-link" th:href="@{/admin/transactions}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/transactions')} ? 'active'">
+                    <span class="sidebar-menu-icon"><i class="fas fa-receipt"></i></span>
+                    <span class="sidebar-menu-text">Transactions</span>
+                </a>
+            </li>
         </ul>
     </aside>
 </html>

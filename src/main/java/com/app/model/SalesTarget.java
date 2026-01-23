@@ -19,9 +19,16 @@ public class SalesTarget {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
     
-    @NotNull(message = "Target amount is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product; // Required for employee portal, optional for admin (backward compatibility)
+    
+    @NotNull(message = "Target units is required")
+    @Column(nullable = false)
+    private Integer targetUnits; // Target in units/quantity
+    
     @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal targetAmount;
+    private BigDecimal targetAmount; // Calculated from targetUnits * product.unitPrice
     
     @NotNull(message = "Period start date is required")
     @Column(nullable = false)
@@ -52,9 +59,27 @@ public class SalesTarget {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
+    @PrePersist
+    protected void onPersist() {
+        calculateTargetAmount();
+    }
+    
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        calculateTargetAmount();
+    }
+    
+    /**
+     * Calculates target amount from target units and product unit price
+     */
+    private void calculateTargetAmount() {
+        if (product != null && product.getUnitPrice() != null && targetUnits != null && targetUnits > 0) {
+            this.targetAmount = product.getUnitPrice().multiply(BigDecimal.valueOf(targetUnits));
+        } else if (targetAmount == null) {
+            // If calculation can't be done, set to zero (for backward compatibility)
+            this.targetAmount = BigDecimal.ZERO;
+        }
     }
     
     // Getters and Setters
@@ -160,6 +185,24 @@ public class SalesTarget {
     
     public void setSalaryCalculated(Boolean salaryCalculated) {
         this.salaryCalculated = salaryCalculated;
+    }
+    
+    public Product getProduct() {
+        return product;
+    }
+    
+    public void setProduct(Product product) {
+        this.product = product;
+        calculateTargetAmount();
+    }
+    
+    public Integer getTargetUnits() {
+        return targetUnits;
+    }
+    
+    public void setTargetUnits(Integer targetUnits) {
+        this.targetUnits = targetUnits;
+        calculateTargetAmount();
     }
 }
 

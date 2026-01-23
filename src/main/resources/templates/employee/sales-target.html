@@ -32,14 +32,30 @@
             <a th:href="@{/employee/dashboard}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
 
+        <div th:if="${employee.hierarchyLevel == 'AREA_SALES_MANAGER' and totalCommission != null}" class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-money-bill-wave"></i> Accumulated Commission
+            </div>
+            <div class="card-body">
+                <h3 class="text-success">₹<span th:text="${#numbers.formatDecimal(totalCommission, 0, 'COMMA', 2, 'POINT')}">0.00</span></h3>
+                <p class="text-muted">Total commission earned from all sales</p>
+            </div>
+        </div>
+
         <div th:if="${currentTarget != null}" class="card mb-4">
             <div class="card-header">Current Sales Target</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Target Amount:</strong> $<span th:text="${#numbers.formatDecimal(currentTarget.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
-                        <p><strong>Achieved Amount:</strong> $<span th:text="${#numbers.formatDecimal(currentTarget.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
-                        <p><strong>Remaining:</strong> $<span th:text="${#numbers.formatDecimal(currentTarget.targetAmount.subtract(currentTarget.achievedAmount), 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
+                        <p th:if="${currentTarget.product != null}">
+                            <strong>Product:</strong> <span th:text="${currentTarget.product.name + ' (' + currentTarget.product.productId + ')'}">Product</span>
+                        </p>
+                        <p th:if="${currentTarget.targetUnits != null}">
+                            <strong>Target Units:</strong> <span th:text="${currentTarget.targetUnits}">0</span> units
+                        </p>
+                        <p><strong>Target Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(currentTarget.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
+                        <p><strong>Achieved Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(currentTarget.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
+                        <p><strong>Remaining:</strong> ₹<span th:text="${#numbers.formatDecimal(currentTarget.targetAmount.subtract(currentTarget.achievedAmount), 0, 'COMMA', 2, 'POINT')}">0.00</span></p>
                         <p><strong>Period:</strong> <span th:text="${#temporals.format(currentTarget.periodStart, 'yyyy-MM-dd')}">Start</span> to <span th:text="${#temporals.format(currentTarget.periodEnd, 'yyyy-MM-dd')}">End</span></p>
                     </div>
                     <div class="col-md-6">
@@ -68,8 +84,10 @@
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th>Product</th>
                                     <th>Period Start</th>
                                     <th>Period End</th>
+                                    <th>Target Units</th>
                                     <th>Target Amount</th>
                                     <th>Achieved Amount</th>
                                     <th>Progress</th>
@@ -78,10 +96,14 @@
                             </thead>
                             <tbody>
                                 <tr th:each="target : ${targets}">
+                                    <td>
+                                        <strong th:text="${target.product != null ? target.product.name + ' (' + target.product.productId + ')' : 'General'}">Product</strong>
+                                    </td>
                                     <td th:text="${#temporals.format(target.periodStart, 'yyyy-MM-dd')}">Start</td>
                                     <td th:text="${#temporals.format(target.periodEnd, 'yyyy-MM-dd')}">End</td>
-                                    <td>$<span th:text="${#numbers.formatDecimal(target.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
-                                    <td>$<span th:text="${#numbers.formatDecimal(target.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                                    <td th:text="${target.targetUnits != null ? target.targetUnits + ' units' : '-'}">-</td>
+                                    <td>₹<span th:text="${#numbers.formatDecimal(target.targetAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                                    <td>₹<span th:text="${#numbers.formatDecimal(target.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
                                     <td>
                                         <div class="progress" style="height: 20px;">
                                             <div class="progress-bar" role="progressbar" 

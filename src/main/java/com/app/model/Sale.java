@@ -30,12 +30,24 @@ public class Sale {
     @Column(nullable = false)
     private LocalDate saleDate;
     
-    @NotBlank(message = "Product/Service name is required")
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+    
+    @Column(name = "product_name", nullable = false)
     private String productName;
     
     @Column(length = 1000)
     private String description;
+    
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Payment> payments;
+    
+    @Column(precision = 10, scale = 2)
+    private BigDecimal commissionAmount;
+    
+    @Column(name = "due_date")
+    private java.time.LocalDate dueDate;
     
     @NotNull(message = "Quantity is required")
     @Column(nullable = false)
@@ -68,6 +80,10 @@ public class Sale {
         if (unitPrice != null && quantity != null) {
             totalAmount = unitPrice.multiply(BigDecimal.valueOf(quantity));
         }
+        // Ensure productName is set
+        if ((productName == null || productName.isEmpty()) && product != null && product.getName() != null) {
+            productName = product.getName();
+        }
     }
     
     @PreUpdate
@@ -75,6 +91,10 @@ public class Sale {
         updatedAt = LocalDateTime.now();
         if (unitPrice != null && quantity != null) {
             totalAmount = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        }
+        // Ensure productName is set
+        if ((productName == null || productName.isEmpty()) && product != null && product.getName() != null) {
+            productName = product.getName();
         }
     }
     
@@ -111,12 +131,87 @@ public class Sale {
         this.saleDate = saleDate;
     }
     
+    public Product getProduct() {
+        return product;
+    }
+    
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+    
     public String getProductName() {
-        return productName;
+        if (productName != null && !productName.isEmpty()) {
+            return productName;
+        }
+        return product != null ? product.getName() : null;
     }
     
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+    
+    public java.util.List<Payment> getPayments() {
+        return payments;
+    }
+    
+    public void setPayments(java.util.List<Payment> payments) {
+        this.payments = payments;
+    }
+    
+    public BigDecimal getCommissionAmount() {
+        return commissionAmount;
+    }
+    
+    public void setCommissionAmount(BigDecimal commissionAmount) {
+        this.commissionAmount = commissionAmount;
+    }
+    
+    /**
+     * Calculates the total amount paid so far
+     */
+    public BigDecimal getPaidAmount() {
+        try {
+            if (payments == null || payments.isEmpty()) {
+                return BigDecimal.ZERO;
+            }
+            return payments.stream()
+                    .map(Payment::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } catch (Exception e) {
+            // Handle lazy loading exceptions
+            return BigDecimal.ZERO;
+        }
+    }
+    
+    /**
+     * Calculates the remaining amount to be paid
+     */
+    public BigDecimal getRemainingAmount() {
+        try {
+            BigDecimal paid = getPaidAmount();
+            if (totalAmount == null) {
+                return BigDecimal.ZERO;
+            }
+            return totalAmount.subtract(paid);
+        } catch (Exception e) {
+            // Handle lazy loading exceptions
+            return totalAmount != null ? totalAmount : BigDecimal.ZERO;
+        }
+    }
+    
+    /**
+     * Checks if the sale is fully paid
+     */
+    public boolean isFullyPaid() {
+        return getRemainingAmount().compareTo(BigDecimal.ZERO) <= 0;
+    }
+    
+    public java.time.LocalDate getDueDate() {
+        return dueDate;
+    }
+    
+    public void setDueDate(java.time.LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
     
     public String getDescription() {

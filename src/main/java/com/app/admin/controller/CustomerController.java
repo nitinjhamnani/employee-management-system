@@ -106,18 +106,37 @@ public class CustomerController {
         return "redirect:/admin/customers";
     }
     
-    @GetMapping("/delete/{id}")
-    public String deleteCustomer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        customerService.deleteCustomer(id);
-        redirectAttributes.addFlashAttribute("message", "Customer deleted successfully!");
-        return "redirect:/admin/customers";
-    }
+    // Delete functionality removed - customers cannot be deleted from admin portal
+    // @GetMapping("/delete/{id}")
+    // public String deleteCustomer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    //     customerService.deleteCustomer(id);
+    //     redirectAttributes.addFlashAttribute("message", "Customer deleted successfully!");
+    //     return "redirect:/admin/customers";
+    // }
     
     @GetMapping("/view/{id}")
     public String viewCustomer(@PathVariable Long id, Model model) {
         Customer customer = customerService.getCustomerById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer ID: " + id));
+        
+        // Load employee information for hierarchy display
         model.addAttribute("customer", customer);
+        if (customer.getPromoterId() != null) {
+            employeeService.getEmployeeById(customer.getPromoterId())
+                    .ifPresent(emp -> model.addAttribute("promoter", emp));
+        }
+        if (customer.getZonalHeadId() != null) {
+            employeeService.getEmployeeById(customer.getZonalHeadId())
+                    .ifPresent(emp -> model.addAttribute("zonalHead", emp));
+        }
+        if (customer.getClusterHeadId() != null) {
+            employeeService.getEmployeeById(customer.getClusterHeadId())
+                    .ifPresent(emp -> model.addAttribute("clusterHead", emp));
+        }
+        if (customer.getAreaSalesManagerId() != null) {
+            employeeService.getEmployeeById(customer.getAreaSalesManagerId())
+                    .ifPresent(emp -> model.addAttribute("areaSalesManager", emp));
+        }
         return "admin/customers/view";
     }
 }
