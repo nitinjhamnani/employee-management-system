@@ -1,6 +1,7 @@
 package com.app.service;
 
 import com.app.model.Customer;
+import com.app.model.Employee;
 import com.app.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -28,8 +31,58 @@ public class CustomerService {
         return customerRepository.findById(id);
     }
     
+    public Customer saveCustomer(Customer customer, Employee creatingEmployee) {
+        if (creatingEmployee != null && customer.getId() == null) {
+            // Populate hierarchy fields based on the employee creating the customer
+            populateHierarchyFields(customer, creatingEmployee);
+        }
+        return customerRepository.save(customer);
+    }
+    
     public Customer saveCustomer(Customer customer) {
         return customerRepository.save(customer);
+    }
+    
+    /**
+     * Populates hierarchy fields based on the employee creating the customer.
+     * - Promoter: Sets promoterId
+     * - Zonal Head: Sets zonalHeadId and promoterId (from reporting manager)
+     * - Cluster Head: Sets clusterHeadId, zonalHeadId, and promoterId (from reporting chain)
+     * - Area Sales Manager: Sets areaSalesManagerId, clusterHeadId, zonalHeadId, and promoterId (from reporting chain)
+     */
+    private void populateHierarchyFields(Customer customer, Employee employee) {
+        String hierarchyLevel = employee.getHierarchyLevel();
+        
+        if ("PROMOTER".equals(hierarchyLevel)) {
+            customer.setPromoterId(employee.getId());
+        } else if ("ZONAL_HEAD".equals(hierarchyLevel)) {
+            customer.setZonalHeadId(employee.getId());
+            if (employee.getReportingManager() != null) {
+                customer.setPromoterId(employee.getReportingManager().getId());
+            }
+        } else if ("CLUSTER_HEAD".equals(hierarchyLevel)) {
+            customer.setClusterHeadId(employee.getId());
+            if (employee.getReportingManager() != null) {
+                Employee zonalHead = employee.getReportingManager();
+                customer.setZonalHeadId(zonalHead.getId());
+                if (zonalHead.getReportingManager() != null) {
+                    customer.setPromoterId(zonalHead.getReportingManager().getId());
+                }
+            }
+        } else if ("AREA_SALES_MANAGER".equals(hierarchyLevel)) {
+            customer.setAreaSalesManagerId(employee.getId());
+            if (employee.getReportingManager() != null) {
+                Employee clusterHead = employee.getReportingManager();
+                customer.setClusterHeadId(clusterHead.getId());
+                if (clusterHead.getReportingManager() != null) {
+                    Employee zonalHead = clusterHead.getReportingManager();
+                    customer.setZonalHeadId(zonalHead.getId());
+                    if (zonalHead.getReportingManager() != null) {
+                        customer.setPromoterId(zonalHead.getReportingManager().getId());
+                    }
+                }
+            }
+        }
     }
     
     public void deleteCustomer(Long id) {
@@ -41,6 +94,88 @@ public class CustomerService {
         results.addAll(customerRepository.findByEmailContainingIgnoreCase(keyword));
         results.addAll(customerRepository.findByPhoneContaining(keyword));
         return results.stream().distinct().toList();
+    }
+    
+    public boolean emailAndPhoneExists(String email, String phone) {
+        return customerRepository.findByEmailAndPhone(email, phone) != null;
+    }
+    
+    public boolean emailAndPhoneExistsForOtherCustomer(String email, String phone, Long id) {
+        Customer customer = customerRepository.findByEmailAndPhone(email, phone);
+        return customer != null && !customer.getId().equals(id);
+    }
+    
+    @Autowired
+    private EmployeeService employeeService;
+    
+    /**
+     * Gets all customers visible to the given employee based on their hierarchy level.
+     * - Promoter: Customers where promoterId = employee.id
+     * - Zonal Head: Customers where zonalHeadId = employee.id OR (clusterHeadId in reporting cluster heads OR areaSalesManagerId in reporting ASMs)
+     * - Cluster Head: Customers where clusterHeadId = employee.id OR areaSalesManagerId in reporting ASMs
+     * - Area Sales Manager: Customers where areaSalesManagerId = employee.id
+     */
+    public List<Customer> getCustomersForEmployee(Employee employee) {
+        if (employee == null || employee.getId() == null) {
+            return List.of();
+        }
+        
+        String hierarchyLevel = employee.getHierarchyLevel();
+        Long employeeId = employee.getId();
+        
+        if ("PROMOTER".equals(hierarchyLevel)) {
+            return customerRepository.findByPromoterId(employeeId);
+        } else if ("ZONAL_HEAD".equals(hierarchyLevel)) {
+            // Get customers directly assigned to this zonal head
+            List<Customer> customers = new java.util.ArrayList<>(customerRepository.findByZonalHeadId(employeeId));
+            
+            // Get all cluster heads reporting to this zonal head
+            List<Employee> clusterHeads = employeeService.getAllEmployees().stream()
+                    .filter(e -> "CLUSTER_HEAD".equals(e.getHierarchyLevel()) 
+                            && e.getReportingManager() != null 
+                            && e.getReportingManager().getId().equals(employeeId))
+                    .toList();
+            
+            // Get customers of those cluster heads
+            for (Employee clusterHead : clusterHeads) {
+                customers.addAll(customerRepository.findByClusterHeadId(clusterHead.getId()));
+            }
+            
+            // Get all ASMs reporting to those cluster heads
+            for (Employee clusterHead : clusterHeads) {
+                List<Employee> asms = employeeService.getAllEmployees().stream()
+                        .filter(e -> "AREA_SALES_MANAGER".equals(e.getHierarchyLevel())
+                                && e.getReportingManager() != null
+                                && e.getReportingManager().getId().equals(clusterHead.getId()))
+                        .toList();
+                for (Employee asm : asms) {
+                    customers.addAll(customerRepository.findByAreaSalesManagerId(asm.getId()));
+                }
+            }
+            
+            return customers.stream().distinct().toList();
+        } else if ("CLUSTER_HEAD".equals(hierarchyLevel)) {
+            // Get customers directly assigned to this cluster head
+            List<Customer> customers = new java.util.ArrayList<>(customerRepository.findByClusterHeadId(employeeId));
+            
+            // Get all ASMs reporting to this cluster head
+            List<Employee> asms = employeeService.getAllEmployees().stream()
+                    .filter(e -> "AREA_SALES_MANAGER".equals(e.getHierarchyLevel())
+                            && e.getReportingManager() != null
+                            && e.getReportingManager().getId().equals(employeeId))
+                    .toList();
+            
+            // Get customers of those ASMs
+            for (Employee asm : asms) {
+                customers.addAll(customerRepository.findByAreaSalesManagerId(asm.getId()));
+            }
+            
+            return customers.stream().distinct().toList();
+        } else if ("AREA_SALES_MANAGER".equals(hierarchyLevel)) {
+            return customerRepository.findByAreaSalesManagerId(employeeId);
+        }
+        
+        return List.of();
     }
 }
 

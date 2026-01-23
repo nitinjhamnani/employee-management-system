@@ -1,7 +1,9 @@
 package com.app.admin.controller;
 
 import com.app.model.Customer;
+import com.app.model.Employee;
 import com.app.service.CustomerService;
+import com.app.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,9 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
     
+    @Autowired
+    private EmployeeService employeeService;
+    
     @GetMapping
     public String listCustomers(Model model, @RequestParam(required = false) String search) {
         List<Customer> customers;
@@ -33,8 +38,17 @@ public class CustomerController {
     }
     
     @GetMapping("/new")
-    public String showCustomerForm(Model model) {
-        model.addAttribute("customer", new Customer());
+    public String showCustomerForm(Model model, @RequestParam(required = false) Long assignToEmployeeId) {
+        Customer customer = new Customer();
+        if (assignToEmployeeId != null) {
+            Employee employee = employeeService.getEmployeeById(assignToEmployeeId).orElse(null);
+            if (employee != null) {
+                // Pre-populate hierarchy fields based on employee
+                customerService.saveCustomer(customer, employee);
+            }
+        }
+        model.addAttribute("customer", customer);
+        model.addAttribute("employees", employeeService.getAllEmployees());
         return "admin/customers/form";
     }
     
@@ -43,27 +57,60 @@ public class CustomerController {
         Customer customer = customerService.getCustomerById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid customer ID: " + id));
         model.addAttribute("customer", customer);
+        model.addAttribute("employees", employeeService.getAllEmployees());
         return "admin/customers/form";
     }
     
     @PostMapping("/save")
     public String saveCustomer(@Valid @ModelAttribute Customer customer,
+                              @RequestParam(required = false) Long assignToEmployeeId,
                               BindingResult result,
+                              Model model,
                               RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("employees", employeeService.getAllEmployees());
             return "admin/customers/form";
         }
         
-        customerService.saveCustomer(customer);
+        // Check for duplicate email+phone combination
+        if (customer.getId() == null) {
+            if (customerService.emailAndPhoneExists(customer.getEmail(), customer.getPhone())) {
+                result.rejectValue("email", "error.customer", "A customer with this email and phone number combination already exists");
+                result.rejectValue("phone", "error.customer", "A customer with this phone number combination already exists");
+                model.addAttribute("employees", employeeService.getAllEmployees());
+                return "admin/customers/form";
+            }
+        } else {
+            if (customerService.emailAndPhoneExistsForOtherCustomer(customer.getEmail(), customer.getPhone(), customer.getId())) {
+                result.rejectValue("email", "error.customer", "A customer with this email and phone number combination already exists");
+                result.rejectValue("phone", "error.customer", "A customer with this phone number combination already exists");
+                model.addAttribute("employees", employeeService.getAllEmployees());
+                return "admin/customers/form";
+            }
+        }
+        
+        // If assigning to an employee, populate hierarchy fields
+        if (assignToEmployeeId != null) {
+            Employee employee = employeeService.getEmployeeById(assignToEmployeeId).orElse(null);
+            if (employee != null && customer.getId() == null) {
+                // Only populate for new customers
+                customerService.saveCustomer(customer, employee);
+            } else {
+                customerService.saveCustomer(customer);
+            }
+        } else {
+            customerService.saveCustomer(customer);
+        }
+        
         redirectAttributes.addFlashAttribute("message", "Customer saved successfully!");
-        return "redirect:/customers";
+        return "redirect:/admin/customers";
     }
     
     @GetMapping("/delete/{id}")
     public String deleteCustomer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         customerService.deleteCustomer(id);
         redirectAttributes.addFlashAttribute("message", "Customer deleted successfully!");
-        return "redirect:/customers";
+        return "redirect:/admin/customers";
     }
     
     @GetMapping("/view/{id}")

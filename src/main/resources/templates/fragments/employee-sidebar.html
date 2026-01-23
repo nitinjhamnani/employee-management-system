@@ -66,10 +66,29 @@
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a class="sidebar-menu-link" th:href="@{/employee/customers/new}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/customers')} ? 'active'">
-                    <span class="sidebar-menu-icon"><i class="fas fa-user-plus"></i></span>
-                    <span class="sidebar-menu-text">New Customer</span>
+                <a class="sidebar-menu-link" th:href="@{/employee/customers}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/customers')} ? 'active'">
+                    <span class="sidebar-menu-icon"><i class="fas fa-users"></i></span>
+                    <span class="sidebar-menu-text">Customers</span>
                 </a>
+            </li>
+
+            <li th:if="${manageableEmployeeTypes != null and !manageableEmployeeTypes.isEmpty()}" class="sidebar-menu-group">
+                <div class="sidebar-menu-group-title">Management</div>
+            </li>
+            <li th:if="${manageableEmployeeTypes != null and !manageableEmployeeTypes.isEmpty()}" class="sidebar-menu-item sidebar-menu-parent" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/team/')} ? 'expanded'">
+                <a class="sidebar-menu-link sidebar-menu-toggle" href="javascript:void(0);" onclick="toggleEmployeeSubmenu(event)">
+                    <span class="sidebar-menu-icon"><i class="fas fa-user-tie"></i></span>
+                    <span class="sidebar-menu-text">Employee Management</span>
+                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-down"></i></span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li th:each="menuType : ${manageableEmployeeTypes}" class="sidebar-submenu-item">
+                        <a class="sidebar-submenu-link" th:href="@{/employee/team/{t}(t=${menuType})}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/employee/team/' + menuType)} ? 'active'">
+                            <span class="sidebar-submenu-icon"><i th:class="${'fas ' + (menuType == 'zonal-heads' ? 'fa-user-tag' : (menuType == 'cluster-heads' ? 'fa-users' : 'fa-user-cog'))}"></i></span>
+                            <span class="sidebar-submenu-text" th:text="${manageableEmployeeTypeLabels != null ? manageableEmployeeTypeLabels[menuType] : menuType}">Label</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
         </ul>
     </aside>

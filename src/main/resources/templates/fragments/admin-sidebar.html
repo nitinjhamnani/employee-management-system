@@ -19,11 +19,38 @@
                     <span class="sidebar-menu-text">Admins</span>
                 </a>
             </li>
-            <li class="sidebar-menu-item">
-                <a class="sidebar-menu-link" th:href="@{/admin/employees}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees')} ? 'active'">
+            <li class="sidebar-menu-item sidebar-menu-parent" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees/')} ? 'expanded'">
+                <a class="sidebar-menu-link sidebar-menu-toggle" href="javascript:void(0);" onclick="toggleEmployeeSubmenu(event)">
                     <span class="sidebar-menu-icon"><i class="fas fa-user-tie"></i></span>
-                    <span class="sidebar-menu-text">Employees</span>
+                    <span class="sidebar-menu-text">Employee Management</span>
+                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-down"></i></span>
                 </a>
+                <ul class="sidebar-submenu">
+                    <li class="sidebar-submenu-item">
+                        <a class="sidebar-submenu-link" th:href="@{/admin/employees/promoters}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees/promoters')} ? 'active'">
+                            <span class="sidebar-submenu-icon"><i class="fas fa-user"></i></span>
+                            <span class="sidebar-submenu-text">Promoter</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-submenu-item">
+                        <a class="sidebar-submenu-link" th:href="@{/admin/employees/zonal-heads}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees/zonal-heads')} ? 'active'">
+                            <span class="sidebar-submenu-icon"><i class="fas fa-user-tag"></i></span>
+                            <span class="sidebar-submenu-text">Zonal Head</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-submenu-item">
+                        <a class="sidebar-submenu-link" th:href="@{/admin/employees/cluster-heads}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees/cluster-heads')} ? 'active'">
+                            <span class="sidebar-submenu-icon"><i class="fas fa-users"></i></span>
+                            <span class="sidebar-submenu-text">Cluster Head</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-submenu-item">
+                        <a class="sidebar-submenu-link" th:href="@{/admin/employees/area-sales-managers}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/employees/area-sales-managers')} ? 'active'">
+                            <span class="sidebar-submenu-icon"><i class="fas fa-user-cog"></i></span>
+                            <span class="sidebar-submenu-text">Area Sales Manager</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="sidebar-menu-item">
                 <a class="sidebar-menu-link" th:href="@{/admin/attendances}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/attendances')} ? 'active'">
@@ -40,6 +67,12 @@
                 <a class="sidebar-menu-link" th:href="@{/admin/customers}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/customers')} ? 'active'">
                     <span class="sidebar-menu-icon"><i class="fas fa-building"></i></span>
                     <span class="sidebar-menu-text">Customers</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a class="sidebar-menu-link" th:href="@{/admin/products}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/products')} ? 'active'">
+                    <span class="sidebar-menu-icon"><i class="fas fa-box"></i></span>
+                    <span class="sidebar-menu-text">Products</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">

@@ -35,7 +35,7 @@ public class Employee {
     private String password;
     
     @NotBlank(message = "Phone number is required")
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String phone;
     
     @Column
@@ -79,6 +79,14 @@ public class Employee {
     
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
+    
+    /** Audit: who created this employee (e.g. "ADMIN:admin1" or "EMPLOYEE:PGABC123") */
+    @Column(name = "created_by")
+    private String createdBy;
+    
+    /** Audit: who last updated this employee */
+    @Column(name = "last_updated_by")
+    private String lastUpdatedBy;
     
     @PreUpdate
     protected void onUpdate() {
@@ -240,6 +248,22 @@ public class Employee {
     
     public void setReportingManager(Employee reportingManager) {
         this.reportingManager = reportingManager;
+    }
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+    
+    public String getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+    
+    public void setLastUpdatedBy(String lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
     }
 }
 

@@ -50,6 +50,18 @@ public class Customer {
     @Column(length = 1000)
     private String notes;
     
+    @Column(name = "promoter_id")
+    private Long promoterId;
+    
+    @Column(name = "zonal_head_id")
+    private Long zonalHeadId;
+    
+    @Column(name = "cluster_head_id")
+    private Long clusterHeadId;
+    
+    @Column(name = "area_sales_manager_id")
+    private Long areaSalesManagerId;
+    
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
@@ -172,6 +184,38 @@ public class Customer {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public Long getPromoterId() {
+        return promoterId;
+    }
+    
+    public void setPromoterId(Long promoterId) {
+        this.promoterId = promoterId;
+    }
+    
+    public Long getZonalHeadId() {
+        return zonalHeadId;
+    }
+    
+    public void setZonalHeadId(Long zonalHeadId) {
+        this.zonalHeadId = zonalHeadId;
+    }
+    
+    public Long getClusterHeadId() {
+        return clusterHeadId;
+    }
+    
+    public void setClusterHeadId(Long clusterHeadId) {
+        this.clusterHeadId = clusterHeadId;
+    }
+    
+    public Long getAreaSalesManagerId() {
+        return areaSalesManagerId;
+    }
+    
+    public void setAreaSalesManagerId(Long areaSalesManagerId) {
+        this.areaSalesManagerId = areaSalesManagerId;
     }
 }
 

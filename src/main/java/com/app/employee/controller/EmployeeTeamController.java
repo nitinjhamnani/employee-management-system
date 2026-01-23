@@ -1,10 +1,13 @@
-package com.app.admin.controller;
+package com.app.employee.controller;
 
 import com.app.config.AuditHelper;
 import com.app.model.Employee;
 import com.app.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,81 +15,78 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Map;
 
 @Controller
-@RequestMapping("/admin/employees")
-public class EmployeeController {
-
-    private static final Map<String, String> TYPE_TO_HIERARCHY = Map.of(
-            "promoters", "PROMOTER",
-            "zonal-heads", "ZONAL_HEAD",
-            "cluster-heads", "CLUSTER_HEAD",
-            "area-sales-managers", "AREA_SALES_MANAGER"
-    );
-
-    private static final Map<String, String> TYPE_TO_LABEL = Map.of(
-            "promoters", "Promoter",
-            "zonal-heads", "Zonal Head",
-            "cluster-heads", "Cluster Head",
-            "area-sales-managers", "Area Sales Manager"
-    );
+@RequestMapping("/employee/team")
+public class EmployeeTeamController {
 
     @Autowired
     private EmployeeService employeeService;
 
-    private String hierarchyFor(String type) {
-        String h = TYPE_TO_HIERARCHY.get(type);
-        if (h == null) throw new IllegalArgumentException("Invalid employee type: " + type);
-        return h;
+    private Employee getCurrentEmployee() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        return employeeService.getEmployeeByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 
-    private String labelFor(String type) {
-        return TYPE_TO_LABEL.getOrDefault(type, type);
+    private void ensureCanManage(String type) {
+        Employee current = getCurrentEmployee();
+        List<String> allowed = employeeService.getManageableTypesForHierarchy(current.getHierarchyLevel());
+        if (!allowed.contains(type)) {
+            throw new AccessDeniedException("You do not have permission to manage " + type);
+        }
     }
 
     private void addTypeAttributes(Model model, String type) {
-        String base = "/admin/employees/" + type;
+        String base = "/employee/team/" + type;
         model.addAttribute("employeeType", type);
-        model.addAttribute("employeeTypeLabel", labelFor(type));
+        model.addAttribute("employeeTypeLabel", employeeService.getLabelForType(type));
         model.addAttribute("listUrl", base);
         model.addAttribute("baseUrl", base);
         model.addAttribute("saveUrl", base + "/save");
     }
 
-    /** Redirect /admin/employees to promoters list. */
+    /** Redirect /employee/team to first manageable type, or dashboard if ASM. */
     @GetMapping
     public String index() {
-        return "redirect:/admin/employees/promoters";
+        Employee current = getCurrentEmployee();
+        List<String> types = employeeService.getManageableTypesForHierarchy(current.getHierarchyLevel());
+        if (types.isEmpty()) return "redirect:/employee/dashboard";
+        return "redirect:/employee/team/" + types.get(0);
     }
 
     @GetMapping("/{type}")
     public String listByType(@PathVariable String type,
                              @RequestParam(required = false) String search,
                              Model model) {
-        String hierarchy = hierarchyFor(type);
+        ensureCanManage(type);
+        String hierarchy = employeeService.getHierarchyForType(type);
         List<Employee> employees = employeeService.searchEmployeesByHierarchyLevel(hierarchy, search);
         model.addAttribute("employees", employees);
         model.addAttribute("search", search);
         addTypeAttributes(model, type);
-        return "admin/employees/list";
+        return "employee/team/list";
     }
 
     @GetMapping("/{type}/new")
     public String newForm(@PathVariable String type, Model model) {
-        String hierarchy = hierarchyFor(type);
+        ensureCanManage(type);
+        String hierarchy = employeeService.getHierarchyForType(type);
         Employee employee = new Employee();
         employee.setHierarchyLevel(hierarchy);
+        Employee current = getCurrentEmployee();
+        employee.setReportingManager(current);
         model.addAttribute("employee", employee);
         model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
-        model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(hierarchy));
         addTypeAttributes(model, type);
-        return "admin/employees/form";
+        return "employee/team/form";
     }
 
     @GetMapping("/{type}/edit/{id}")
     public String editForm(@PathVariable String type, @PathVariable Long id, Model model) {
-        hierarchyFor(type);
+        ensureCanManage(type);
+        employeeService.getHierarchyForType(type);
         Employee employee = employeeService.getEmployeeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
         model.addAttribute("employee", employee);
@@ -95,29 +95,30 @@ public class EmployeeController {
                 .filter(e -> !e.getId().equals(id))
                 .toList();
         model.addAttribute("managers", managers);
-        model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(employee.getHierarchyLevel()));
         addTypeAttributes(model, type);
-        return "admin/employees/form";
+        return "employee/team/form";
     }
 
     @GetMapping("/{type}/view/{id}")
     public String view(@PathVariable String type, @PathVariable Long id, Model model) {
-        hierarchyFor(type);
+        ensureCanManage(type);
+        employeeService.getHierarchyForType(type);
         Employee employee = employeeService.getEmployeeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
         model.addAttribute("employee", employee);
         model.addAttribute("createdByDisplay", AuditHelper.formatAuditForDisplay(employee.getCreatedBy()));
         model.addAttribute("lastUpdatedByDisplay", AuditHelper.formatAuditForDisplay(employee.getLastUpdatedBy()));
         addTypeAttributes(model, type);
-        return "admin/employees/view";
+        return "employee/team/view";
     }
 
     @GetMapping("/{type}/delete/{id}")
     public String delete(@PathVariable String type, @PathVariable Long id, RedirectAttributes ra) {
-        hierarchyFor(type);
+        ensureCanManage(type);
+        employeeService.getHierarchyForType(type);
         employeeService.deleteEmployee(id);
-        ra.addFlashAttribute("message", labelFor(type) + " deleted successfully!");
-        return "redirect:/admin/employees/" + type;
+        ra.addFlashAttribute("message", employeeService.getLabelForType(type) + " deleted successfully!");
+        return "redirect:/employee/team/" + type;
     }
 
     @PostMapping("/{type}/save")
@@ -127,18 +128,18 @@ public class EmployeeController {
                        BindingResult result,
                        Model model,
                        RedirectAttributes ra) {
-        String hierarchy = hierarchyFor(type);
+        ensureCanManage(type);
+        String hierarchy = employeeService.getHierarchyForType(type);
         if (result.hasErrors()) {
             String h = employee.getHierarchyLevel() != null ? employee.getHierarchyLevel() : hierarchy;
             model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(h));
-            model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(h));
-            if (!"PROMOTER".equals(h) && reportingManagerId != null) {
+            if (reportingManagerId != null) {
                 employee.setReportingManager(employeeService.getEmployeeById(reportingManagerId).orElse(null));
-            } else if ("PROMOTER".equals(h)) {
-                employee.setReportingManager(null);
+            } else if (employee.getId() == null) {
+                employee.setReportingManager(getCurrentEmployee());
             }
             addTypeAttributes(model, type);
-            return "admin/employees/form";
+            return "employee/team/form";
         }
 
         // Check for duplicate email and phone (both must be unique independently)
@@ -147,17 +148,15 @@ public class EmployeeController {
             if (employeeService.emailExists(employee.getEmail())) {
                 result.rejectValue("email", "error.employee", "An employee with this email already exists");
                 model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
-                model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(hierarchy));
                 addTypeAttributes(model, type);
-                return "admin/employees/form";
+                return "employee/team/form";
             }
             // Check phone uniqueness
             if (employeeService.phoneExists(employee.getPhone())) {
                 result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
                 model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
-                model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(hierarchy));
                 addTypeAttributes(model, type);
-                return "admin/employees/form";
+                return "employee/team/form";
             }
         } else {
             // Check email uniqueness for other employees
@@ -165,24 +164,20 @@ public class EmployeeController {
                 result.rejectValue("email", "error.employee", "An employee with this email already exists");
                 model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(
                         employee.getHierarchyLevel()));
-                model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(employee.getHierarchyLevel()));
                 addTypeAttributes(model, type);
-                return "admin/employees/form";
+                return "employee/team/form";
             }
             // Check phone uniqueness for other employees
             if (employeeService.phoneExistsForOtherEmployee(employee.getPhone(), employee.getId())) {
                 result.rejectValue("phone", "error.employee", "An employee with this phone number already exists");
                 model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(
                         employee.getHierarchyLevel()));
-                model.addAttribute("reportingManagerIsSelf", "PROMOTER".equals(employee.getHierarchyLevel()));
                 addTypeAttributes(model, type);
-                return "admin/employees/form";
+                return "employee/team/form";
             }
         }
 
-        if ("PROMOTER".equals(employee.getHierarchyLevel() != null ? employee.getHierarchyLevel() : hierarchy)) {
-            employee.setReportingManager(null);
-        } else if (reportingManagerId != null) {
+        if (reportingManagerId != null) {
             employee.setReportingManager(
                     employeeService.getEmployeeById(reportingManagerId).orElse(null));
         } else {
@@ -203,7 +198,7 @@ public class EmployeeController {
         }
 
         employeeService.saveEmployee(employee);
-        ra.addFlashAttribute("message", labelFor(type) + " saved successfully!");
-        return "redirect:/admin/employees/" + type;
+        ra.addFlashAttribute("message", employeeService.getLabelForType(type) + " saved successfully!");
+        return "redirect:/employee/team/" + type;
     }
 }

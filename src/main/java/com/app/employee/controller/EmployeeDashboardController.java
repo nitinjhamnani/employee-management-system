@@ -5,13 +5,11 @@ import com.app.model.Attendance;
 import com.app.model.Task;
 import com.app.model.SalesTarget;
 import com.app.model.Sale;
-import com.app.model.Customer;
 import com.app.service.EmployeeService;
 import com.app.service.AttendanceService;
 import com.app.service.TaskService;
 import com.app.service.SalesTargetService;
 import com.app.service.SaleService;
-import com.app.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,9 +40,6 @@ public class EmployeeDashboardController {
     
     @Autowired
     private SaleService saleService;
-    
-    @Autowired
-    private CustomerService customerService;
     
     private Employee getCurrentEmployee() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -142,26 +137,6 @@ public class EmployeeDashboardController {
         model.addAttribute("currentTarget", currentTarget.orElse(null));
         
         return "employee/sales-target";
-    }
-    
-    @GetMapping("/customers/new")
-    public String showCustomerForm(Model model) {
-        Employee employee = getCurrentEmployee();
-        model.addAttribute("employee", employee);
-        model.addAttribute("customer", new Customer());
-        return "employee/customer-form";
-    }
-    
-    @PostMapping("/customers/save")
-    public String saveCustomer(@ModelAttribute Customer customer,
-                              RedirectAttributes redirectAttributes) {
-        try {
-            customerService.saveCustomer(customer);
-            redirectAttributes.addFlashAttribute("message", "Customer created successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/employee/dashboard";
     }
     
     @GetMapping("/profile")

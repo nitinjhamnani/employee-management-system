@@ -260,6 +260,84 @@ body {
     overflow: hidden;
 }
 
+/* Employee Management submenu */
+.sidebar-menu-parent {
+    position: relative;
+}
+
+.sidebar-menu-toggle {
+    cursor: pointer;
+}
+
+.sidebar-menu-chevron {
+    margin-left: auto;
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-menu-parent.expanded .sidebar-menu-chevron {
+    transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.sidebar-menu-parent.expanded .sidebar-submenu {
+    max-height: 320px;
+}
+
+.sidebar-submenu-item {
+    margin: 0;
+}
+
+.sidebar-submenu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1.5rem 0.5rem 3rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-submenu-link:hover {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+}
+
+.sidebar-submenu-link.active {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.sidebar-submenu-icon {
+    width: 18px;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.sidebar.collapsed .sidebar-submenu {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-menu-chevron {
+    display: none;
+}
+
 /* ============================================
    Main Content Area
    ============================================ */

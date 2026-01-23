@@ -27,79 +27,7 @@
         </header>
 
         <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <ul class="sidebar-menu">
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link active" th:href="@{/employee/dashboard}">
-                        <span class="sidebar-menu-icon">📊</span>
-                        <span class="sidebar-menu-text">Dashboard</span>
-                    </a>
-                </li>
-                
-                <li class="sidebar-menu-group">
-                    <div class="sidebar-menu-group-title">Personal</div>
-                </li>
-                
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/profile}">
-                        <span class="sidebar-menu-icon">👤</span>
-                        <span class="sidebar-menu-text">Profile</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/bank-details}">
-                        <span class="sidebar-menu-icon">🏦</span>
-                        <span class="sidebar-menu-text">Bank Details</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/salary}">
-                        <span class="sidebar-menu-icon">💰</span>
-                        <span class="sidebar-menu-text">Salary</span>
-                    </a>
-                </li>
-                
-                <li class="sidebar-menu-group">
-                    <div class="sidebar-menu-group-title">Requests</div>
-                </li>
-                
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/claims}">
-                        <span class="sidebar-menu-icon">📋</span>
-                        <span class="sidebar-menu-text">Claims</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/leave-requests}">
-                        <span class="sidebar-menu-icon">🏖️</span>
-                        <span class="sidebar-menu-text">Leave Requests</span>
-                    </a>
-                </li>
-                
-                <li class="sidebar-menu-group">
-                    <div class="sidebar-menu-group-title">Work</div>
-                </li>
-                
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/tasks}">
-                        <span class="sidebar-menu-icon">✅</span>
-                        <span class="sidebar-menu-text">Tasks</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/sales-target}">
-                        <span class="sidebar-menu-icon">🎯</span>
-                        <span class="sidebar-menu-text">Sales Target</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a class="sidebar-menu-link" th:href="@{/employee/customers/new}">
-                        <span class="sidebar-menu-icon">➕</span>
-                        <span class="sidebar-menu-text">New Customer</span>
-                    </a>
-                </li>
-            </ul>
-        </aside>
+        <div th:replace="~{fragments/employee-sidebar :: sidebar}"></div>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -267,38 +195,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-
-        // Load sidebar state from localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                sidebar.classList.add('collapsed');
-            }
-            
-            // Mobile menu toggle
-            const mobileToggle = document.querySelector('.mobile-menu-toggle');
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('mobile-open');
-                });
-            }
-            
-            // Set active menu item based on current URL
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
-        });
-    </script>
+    <script th:src="@{/js/sidebar.js}"></script>
 </body>
 </html>

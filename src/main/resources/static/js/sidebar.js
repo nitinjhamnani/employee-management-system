@@ -30,9 +30,20 @@ function toggleMobileSidebar() {
     return toggleSidebar();
 }
 
+// Toggle Employee Management submenu
+function toggleEmployeeSubmenu(event) {
+    if (event) event.preventDefault();
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const parent = document.querySelector('.sidebar-menu-parent');
+    if (!parent) return;
+    parent.classList.toggle('expanded');
+}
+
 // Make functions globally available
 window.toggleSidebar = toggleSidebar;
 window.toggleMobileSidebar = toggleMobileSidebar;
+window.toggleEmployeeSubmenu = toggleEmployeeSubmenu;
 
 // Initialize sidebar on page load
 document.addEventListener('DOMContentLoaded', function() {
