@@ -115,16 +115,17 @@ public class AdminController {
         return "redirect:/admin/admins";
     }
     
-    @GetMapping("/delete/{id}")
-    public String deleteAdmin(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            adminService.deleteAdmin(id);
-            redirectAttributes.addFlashAttribute("success", "Admin deleted successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error deleting admin: " + e.getMessage());
-        }
-        return "redirect:/admin/admins";
-    }
+    // Delete functionality removed - admins cannot be deleted
+    // @GetMapping("/delete/{id}")
+    // public String deleteAdmin(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    //     try {
+    //         adminService.deleteAdmin(id);
+    //         redirectAttributes.addFlashAttribute("success", "Admin deleted successfully!");
+    //     } catch (Exception e) {
+    //         redirectAttributes.addFlashAttribute("error", "Error deleting admin: " + e.getMessage());
+    //     }
+    //     return "redirect:/admin/admins";
+    // }
     
     @GetMapping("/view/{id}")
     public String viewAdmin(@PathVariable Long id, Model model) {

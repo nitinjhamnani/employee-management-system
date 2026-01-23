@@ -68,6 +68,14 @@ public class Customer {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
     
+    /** Audit: who created this customer (e.g. "ADMIN:admin1" or "EMPLOYEE:PGABC123") */
+    @Column(name = "created_by")
+    private String createdBy;
+    
+    /** Audit: who last updated this customer */
+    @Column(name = "last_updated_by")
+    private String lastUpdatedBy;
+    
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
@@ -184,6 +192,22 @@ public class Customer {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+    
+    public String getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+    
+    public void setLastUpdatedBy(String lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
     }
     
     public Long getPromoterId() {

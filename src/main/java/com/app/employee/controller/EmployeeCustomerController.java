@@ -155,31 +155,37 @@ public class EmployeeCustomerController {
         }
         
         // Save customer with hierarchy fields populated based on current employee
+        String audit = AuditHelper.currentUserAuditString();
         if (customer.getId() == null) {
             // New customer - populate hierarchy fields
+            customer.setCreatedBy(audit);
             customerService.saveCustomer(customer, currentEmployee);
         } else {
-            // Existing customer - preserve hierarchy fields, just save
+            // Existing customer - preserve hierarchy fields and audit info
+            customerService.getCustomerById(customer.getId())
+                    .ifPresent(existing -> customer.setCreatedBy(existing.getCreatedBy()));
+            customer.setLastUpdatedBy(audit);
             customerService.saveCustomer(customer);
         }
         redirectAttributes.addFlashAttribute("message", "Customer saved successfully!");
         return "redirect:/employee/customers";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteCustomer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Employee currentEmployee = getCurrentEmployee();
-        Customer customer = customerService.getCustomerById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid customer ID: " + id));
-        
-        // Verify the customer is accessible to this employee
-        List<Customer> accessibleCustomers = customerService.getCustomersForEmployee(currentEmployee);
-        if (!accessibleCustomers.contains(customer)) {
-            throw new RuntimeException("You do not have access to this customer");
-        }
-        
-        customerService.deleteCustomer(id);
-        redirectAttributes.addFlashAttribute("message", "Customer deleted successfully!");
-        return "redirect:/employee/customers";
-    }
+    // Delete functionality removed - customers cannot be deleted from employee portal
+    // @GetMapping("/delete/{id}")
+    // public String deleteCustomer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    //     Employee currentEmployee = getCurrentEmployee();
+    //     Customer customer = customerService.getCustomerById(id)
+    //             .orElseThrow(() -> new IllegalArgumentException("Invalid customer ID: " + id));
+    //     
+    //     // Verify the customer is accessible to this employee
+    //     List<Customer> accessibleCustomers = customerService.getCustomersForEmployee(currentEmployee);
+    //     if (!accessibleCustomers.contains(customer)) {
+    //         throw new RuntimeException("You do not have access to this customer");
+    //     }
+    //     
+    //     customerService.deleteCustomer(id);
+    //     redirectAttributes.addFlashAttribute("message", "Customer deleted successfully!");
+    //     return "redirect:/employee/customers";
+    // }
 }

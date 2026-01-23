@@ -4,6 +4,8 @@ import com.app.model.Sale;
 import com.app.model.Employee;
 import com.app.model.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -11,6 +13,9 @@ import java.util.List;
 
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Long> {
+    @Query("SELECT s FROM Sale s LEFT JOIN FETCH s.payments WHERE s.employee = :employee")
+    List<Sale> findByEmployeeWithPayments(@Param("employee") Employee employee);
+    
     List<Sale> findByEmployee(Employee employee);
     List<Sale> findByCustomer(Customer customer);
     List<Sale> findBySaleDate(LocalDate saleDate);
