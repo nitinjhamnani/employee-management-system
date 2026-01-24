@@ -331,29 +331,31 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-leaf"></i> Potens Green
+<!--            <a class="navbar-brand" href="/">-->
+<!--&lt;!&ndash;                <i class="fas fa-leaf"></i> Potens Green&ndash;&gt;-->
+<!--                <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">-->
+<!--                    <img th:src="@{/images/PGE.png}" alt="PGE" style="height:40px;">-->
+<!--&lt;!&ndash;                    <span>Potens Green</span>&ndash;&gt;-->
+<!--                </a>-->
+
+            <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+                <img th:src="@{/images/PGE.png}" alt="PGE" style="height:40px;">
+            </a>
+
+
+
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#home">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#services">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contact">Contact</a>
-                    </li>
-                    <li class="nav-item ms-3">
-                        <a th:href="@{/employee/login}" class="btn btn-login">Login</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#divisions">Divisions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#network">Partnerships & Network</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item ms-3"><a th:href="@{/employee/login}" class="btn btn-login">Login</a></li>
                 </ul>
             </div>
         </div>
@@ -363,12 +365,18 @@
     <section class="hero" id="home">
         <div class="container">
             <div class="hero-content">
-                <h1>Powering Your Future with Clean Energy</h1>
-                <p>Potens Green is a leading fuel marketing company committed to delivering sustainable energy solutions and exceptional service to businesses and communities across the region.</p>
+                <h1>Engineering the Future of Indian Business.</h1>
+                <p>From national fuel logistics to AI-driven software and global trade —
+                    we build scalable ecosystems. Since 2010.</p>
+<!--                <div class="hero-buttons">-->
+<!--                    <a th:href="@{/employee/login}" class="btn btn-hero btn-hero-primary">Employee Portal</a>-->
+<!--                    <a th:href="@{/admin/login}" class="btn btn-hero btn-hero-outline">Admin Portal</a>-->
+<!--                </div>-->
                 <div class="hero-buttons">
-                    <a th:href="@{/employee/login}" class="btn btn-hero btn-hero-primary">Employee Portal</a>
-                    <a th:href="@{/admin/login}" class="btn btn-hero btn-hero-outline">Admin Portal</a>
+                    <a href="#divisions" class="btn btn-hero btn-hero-primary">Explore Our Divisions</a>
+                    <a href="#partner" class="btn btn-hero btn-hero-outline">Partner With Us</a>
                 </div>
+
             </div>
         </div>
     </section>
@@ -376,8 +384,8 @@
     <!-- Features Section -->
     <section class="features" id="services">
         <div class="container">
-            <h2 class="section-title">Our Services</h2>
-            <p class="section-subtitle">Comprehensive fuel solutions tailored to your needs</p>
+            <h2 class="section-title">Our Divisions</h2>
+            <p class="section-subtitle">Energy • Fintech • Software & AI • Global Trading</p>
             
             <div class="row g-4">
                 <div class="col-md-4">
@@ -448,11 +456,22 @@
         <div class="container">
             <div class="about-content">
                 <div class="about-text">
-                    <h2>About Potens Green</h2>
-                    <p>Potens Green has been at the forefront of the fuel marketing industry, providing reliable and sustainable energy solutions for over a decade. Our commitment to excellence, innovation, and environmental responsibility sets us apart in the market.</p>
-                    <p>We specialize in B2B fuel distribution, working closely with businesses to understand their unique energy requirements and deliver tailored solutions that drive efficiency and reduce costs.</p>
-                    <p>Our team of experienced professionals is dedicated to maintaining the highest standards of service, safety, and environmental stewardship in everything we do.</p>
+                    <h2>Engineering Dreams Since 2010</h2>
+
+                    <p><b>Our Identity:</b> Potens Green is not just an engineering firm; we are a multi-disciplinary execution engine. We specialize in taking complex technical requirements and materializing them into functional, profitable operations across any Indian state.</p>
+
+                    <p><b>The Vision:</b> To be the bridge between global innovation and local execution, empowering rural landscapes and urban centers alike.</p>
+
+                    <p><b>The Mission:</b> To provide robust technical infrastructure in Energy, Fintech, and Software that drives the next generation of Indian entrepreneurship.</p>
+
+                    <p><b>Core Pillars:</b></p>
+                    <ul>
+                        <li><b>Innovation:</b> We don't just use tech; we build it.</li>
+                        <li><b>Integrity:</b> Technical precision matched with ethical business.</li>
+                        <li><b>Development:</b> Dedicated to Rural and Small Business growth.</li>
+                    </ul>
                 </div>
+
                 <div class="about-image">
                     <i class="fas fa-industry"></i>
                 </div>
@@ -460,70 +479,249 @@
         </div>
     </section>
 
+
     <!-- Stats Section -->
     <section class="stats">
         <div class="container">
             <div class="row">
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">10+</div>
-                        <div class="stat-label">Years of Experience</div>
+                <div class="col-md-3 col-sm-6 mb-4"><div class="stat-item">
+                    <div class="stat-number">15+</div><div class="stat-label">Years of Excellence</div>
+                </div></div>
+
+                <div class="col-md-3 col-sm-6 mb-4"><div class="stat-item">
+                    <div class="stat-number">PAN</div><div class="stat-label">India Operational Network</div>
+                </div></div>
+
+                <div class="col-md-3 col-sm-6 mb-4"><div class="stat-item">
+                    <div class="stat-number">OMCs</div><div class="stat-label">All Major OMCs as Partners</div>
+                </div></div>
+
+                <div class="col-md-3 col-sm-6 mb-4"><div class="stat-item">
+                    <div class="stat-number">∞</div><div class="stat-label">Scalability for National Projects</div>
+                </div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="divisions">
+        <div class="container">
+            <h2 class="section-title">Divisions</h2>
+            <p class="section-subtitle">Energy & Petroleum • Fintech & Infrastructure • Software & AI • Global Trading</p>
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <div class="feature-card text-start">
+                        <h3>Energy & Petroleum (Fuel Delivery)</h3>
+                        <p><i>Fueling India through Precision Logistics.</i></p>
+
+                        <p><b>A. Doorstep Diesel Delivery (DDD) Solutions</b></p>
+                        <ul>
+                            <li><b>20L PESO-Approved Jerry Cans:</b> High-grade, anti-static, and tamper-proof solutions for small-scale delivery (Generators, Agri-use).</li>
+                            <li><b>2000L Mini Fuel Stations:</b> Skid-mounted, "Plug-and-Play" stations for industrial sites and private fleets.</li>
+                            <li><b>6000L PESO-Approved Fuel Bowsers:</b> Advanced mobile tankers with digital flow meters and IoT tracking for large-scale mobile refueling.</li>
+                        </ul>
+
+                        <p><b>B. OMC Partnership & Lease Guidance</b> We offer end-to-end consultancy for IOCL, HPCL, BPCL, and NAYARA fuel stations.</p>
+                        <ul>
+                            <li><b>Leasing Assistance:</b> Navigating the acquisition and operation of fully operational OMC stations.</li>
+                            <li><b>Strategic Growth:</b> Helping "FuelEnts" (Fuel Entrepreneurs) scale through professional consultancy.</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">500+</div>
-                        <div class="stat-label">Business Partners</div>
+
+                <div class="col-md-6">
+                    <div class="feature-card text-start">
+                        <h3>Fintech & Digital Infrastructure</h3>
+                        <p><i>The Physical Backbone of Digital Finance.</i></p>
+                        <ul>
+                            <li><b>Deployment Agency:</b> We are a PAN India agency specializing in the massive rollout of Fintech hardware.</li>
+                            <li><b>Service Scope:</b> Installation and maintenance of POS terminals, biometric devices, and micro-ATM infrastructure.</li>
+                            <li><b>Legacy of Trust:</b> Proven track record with Radiant Acemoney Ltd., and historical collaborations with Ebix and NSDL Prepaid Cards.</li>
+                            <li><b>The "Potens" Edge:</b> A workforce ready to mobilize in any district in India within record time.</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Customer Support</div>
+
+                <div class="col-md-6">
+                    <div class="feature-card text-start">
+                        <h3>Software & AI Solutions</h3>
+                        <p><i>Intelligent Code for Complex Challenges.</i></p>
+                        <ul>
+                            <li><b>Custom Software Development:</b> From technical ERPs to non-technical business management tools.</li>
+                            <li><b>Supply Chain & Accounting:</b> Specialized systems designed for high-volume logistics and financial transparency.</li>
+                            <li><b>AI/ML Integration:</b> Building the future with predictive analytics and machine learning models for business automation.</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="stat-item">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Quality Guarantee</div>
+
+                <div class="col-md-6">
+                    <div class="feature-card text-start">
+                        <h3>Global Trading (Electronics & Appliances)</h3>
+                        <p><i>Importing Excellence, Delivering Value.</i></p>
+                        <p>We leverage our global supply chain to import and trade high-performance electronics and household appliances.</p>
+                        <p><b>Product Categories:</b></p>
+                        <ul>
+                            <li><b>Home Entertainment:</b> LED TVs (HD/4K/Smart), Music Systems, and Home Theaters.</li>
+                            <li><b>Climate Control:</b> Energy-efficient Air Conditioners (Inverter/Fixed).</li>
+                            <li><b>Home Utilities:</b> Refrigerators, Washing Machines, and specialized kitchen appliances.</li>
+                        </ul>
+                        <p><b>Compliance Focus:</b> Full adherence to BIS, EPR, and WPC standards, ensuring every product is certified for the Indian market.</p>
                     </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="about" id="network">
+        <div class="container">
+            <h2 class="section-title">Partnerships & National Network</h2>
+            <p class="section-subtitle">Scalability Without Borders.</p>
+
+            <div class="feature-card text-start">
+                <ul>
+                    <li><b>Operational Reach:</b> We possess a "Ready-to-Deploy" workforce. Our network allows us to take on national-level projects in operations and marketing across all 28 states and UTs.</li>
+                    <li><b>Strategic Alliances:</b>
+                        <ul>
+                            <li><b>Energy:</b> iFuel Pvt. Ltd. & major OMCs.</li>
+                            <li><b>Fintech:</b> Radiant Acemoney Ltd.</li>
+                        </ul>
+                    </li>
+                    <li><b>The Proposition:</b> We invite global brands and national companies to utilize our infrastructure to "Materialize" their business goals on the ground.</li>
+                </ul>
+
+                <div id="partner" class="mt-3">
+                    <a href="#contact" class="btn btn-login">Partner With Us</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+
+
+    <!-- Footer / Contact -->
     <footer class="footer" id="contact">
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5><i class="fas fa-leaf"></i> Potens Green</h5>
-                    <p style="color: #ccc; line-height: 1.8;">Leading the future of fuel marketing with sustainable solutions and exceptional service.</p>
+
+                <div class="col-md-5 mb-4">
+                    <h5>
+                        <img th:src="@{/images/PGE.png}" alt="PGE" style="height:30px; vertical-align:middle; margin-right:8px;">
+                        Potens Green Engineering Solutions Pvt. Ltd.
+                    </h5>
+                    <p style="color:#ccc; line-height:1.8;">
+                        Engineering the future of Indian business — from national fuel logistics to AI-driven software and global trade.
+                    </p>
                 </div>
-                <div class="col-md-4 mb-4">
+
+                <div class="col-md-3 mb-4">
                     <h5>Quick Links</h5>
                     <ul>
                         <li><a href="#home">Home</a></li>
                         <li><a href="#about">About Us</a></li>
-                        <li><a href="#services">Services</a></li>
+                        <li><a href="#divisions">Divisions</a></li>
+                        <li><a href="#network">Partnerships & Network</a></li>
                         <li><a th:href="@{/employee/login}">Employee Portal</a></li>
                         <li><a th:href="@{/admin/login}">Admin Portal</a></li>
                     </ul>
                 </div>
+
                 <div class="col-md-4 mb-4">
                     <h5>Contact Us</h5>
                     <ul>
-                        <li><i class="fas fa-envelope"></i> info@potensgreen.com</li>
-                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
-                        <li><i class="fas fa-map-marker-alt"></i> 123 Energy Street, Fuel City</li>
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            Corporate Office: Unit 511A, 5th Floor, PS Cube, New Town, Kolkata 700161, West Bengal, India.
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            Official Email:
+                            <span style="color:#ccc;">admin@potensgreenengineering.in</span> /
+                            <span style="color:#ccc;">info@potensgreenengineering.in</span>
+                        </li>
                     </ul>
+                    <li>
+                        <i class="fas fa-phone-alt"></i>
+                        Toll Free:
+                        <a href="tel:18003135280" style="color:#ccc; text-decoration:none;">
+                            1800 313 5280
+                        </a>
+                    </li>
+
+
+                    <!-- Button: Request a Proposal -->
+                    <button type="button"
+                            class="btn btn-login mt-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#proposalModal">
+                        Request a Proposal
+                    </button>
                 </div>
+
             </div>
+
             <div class="footer-bottom">
-                <p>&copy; 2024 Potens Green. All rights reserved. | Fuel Marketing Excellence</p>
+                <p>&copy; 2026 Potens Green Engineering Solutions Pvt. Ltd. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Partner With Us Modal -->
+    <div class="modal fade" id="proposalModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Partner With Us</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form th:action="@{/partner-with-us}" th:object="${partnerReq}" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-dark">Name</label>
+                                <input type="text" th:field="*{name}" class="form-control" placeholder="Enter your name" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label text-dark">Mobile No</label>
+                                <input type="text" th:field="*{mobileNo}" class="form-control" placeholder="10-digit mobile" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-dark">Address</label>
+                                <textarea th:field="*{address}" class="form-control" rows="2" placeholder="Full address" required></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label text-dark">District</label>
+                                <input type="text" th:field="*{district}" class="form-control" placeholder="District" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label text-dark">Interested In</label>
+                                <select th:field="*{interestedIn}" class="form-select" required>
+                                    <option value="">-- Select --</option>
+                                    <option th:each="i : ${interests}" th:value="${i}" th:text="${i}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-login">Submit</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
