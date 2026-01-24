@@ -3,12 +3,16 @@ package com.app.service;
 import com.app.model.Payment;
 import com.app.model.Sale;
 import com.app.model.Employee;
+import com.app.model.SalesTarget;
+import com.app.model.Product;
 import com.app.repository.PaymentRepository;
 import com.app.repository.SaleRepository;
+import com.app.repository.SalesTargetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -20,10 +24,13 @@ public class TransactionService {
     
     @Autowired
     private PaymentRepository paymentRepository;
-    
+
     @Autowired
     private SaleRepository saleRepository;
-    
+
+    @Autowired
+    private SalesTargetRepository salesTargetRepository;
+
     @Autowired
     private EmployeeService employeeService;
     
@@ -131,5 +138,49 @@ public class TransactionService {
         
         List<Long> hierarchyEmployeeIds = employeeService.getAllReportingEmployeeIds(employee);
         return hierarchyEmployeeIds.contains(saleEmployeeId);
+    }
+
+    /**
+     * Saves a transaction (payment)
+     */
+    public Payment saveTransaction(Payment payment) {
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * Calculates commission after transaction approval
+     */
+    public void calculateCommissionAfterApproval(Payment payment) {
+        if (payment.getSale() == null || payment.getApproved() == null || !payment.getApproved()) {
+            return;
+        }
+
+        Sale sale = payment.getSale();
+        Employee employee = sale.getEmployee();
+
+        if (employee == null) {
+            return;
+        }
+
+        // Find the sales target for this employee in the current period
+        List<SalesTarget> targets = salesTargetRepository.findByEmployeeAndProductAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
+            employee, sale.getProduct(), sale.getSaleDate(), sale.getSaleDate());
+
+        if (!targets.isEmpty()) {
+            SalesTarget target = targets.get(0); // Take the first one
+
+            // Calculate commission if target is achieved
+            if (target.getProgressPercentage() != null && target.getProgressPercentage().intValue() >= 100) {
+                // Commission = (Achieved Amount × Commission Rate) / 100
+                BigDecimal commissionAmount = target.getAchievedAmount()
+                    .multiply(target.getCommissionRate())
+                    .divide(BigDecimal.valueOf(100));
+
+                // Update the target with commission amount
+                target.setCommissionAmount(target.getCommissionAmount() != null ?
+                    target.getCommissionAmount().add(commissionAmount) : commissionAmount);
+                salesTargetRepository.save(target);
+            }
+        }
     }
 }

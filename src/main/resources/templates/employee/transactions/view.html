@@ -72,6 +72,27 @@
                                 <th>Notes:</th>
                                 <td th:text="${transaction.notes}">-</td>
                             </tr>
+                            <tr>
+                                <th>Settlement Status:</th>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${transaction.settled == true} ? 'badge-success' : 'badge-warning'"
+                                          th:text="${transaction.settled == true ? 'Settled' : 'Not Settled'}">Not Settled</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Approval Status:</th>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${transaction.approved == true} ? 'badge-success' :
+                                                          (${transaction.settled == true} ? 'badge-info' : 'badge-secondary')"
+                                          th:text="${transaction.approved == true ? 'Approved' : (transaction.settled == true ? 'Pending Approval' : 'Not Settled')}">Not Settled</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${transaction.approvedBy != null}">
+                                <th>Approved By:</th>
+                                <td th:text="${transaction.approvedBy.fullName}">Approver</td>
+                            </tr>
                         </table>
                     </div>
                 </div>
@@ -111,9 +132,36 @@
                             </tr>
                             <tr>
                                 <th>Employee:</th>
-                                <td th:text="${transaction.sale.employee != null ? transaction.sale.employee.name : '-'}">Employee</td>
+                                <td th:text="${transaction.sale.employee != null ? transaction.sale.employee.fullName : '-'}">Employee</td>
                             </tr>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Action Buttons for Managers -->
+                <div class="card mt-4" th:if="${transaction.settled == true and transaction.approved != true and currentEmployee != null}">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-check-circle"></i> Transaction Approval</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">This transaction has been settled by admin and is pending your approval.</p>
+                        <div class="alert alert-info">
+                            <strong>Approval Required:</strong> As a reporting manager, you can approve this transaction to release commission for the employee.
+                        </div>
+                        <form th:action="@{/employee/transactions/approve/{id}(id=${transaction.id})}" method="post">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-thumbs-up"></i> Approve Transaction
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mt-4" th:if="${transaction.approved == true}">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-check-double"></i> Transaction Approved</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-success">This transaction has been approved and commission has been calculated.</p>
                     </div>
                 </div>
             </div>

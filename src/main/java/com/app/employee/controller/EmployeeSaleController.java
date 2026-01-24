@@ -119,27 +119,6 @@ public class EmployeeSaleController {
         return "employee/sales/view";
     }
 
-    @GetMapping("/edit/{id}")
-    public String editSale(@PathVariable Long id, Model model) {
-        Employee currentEmployee = getCurrentEmployee();
-        Sale sale = saleService.getSaleById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
-            throw new RuntimeException("You do not have access to this sale");
-        }
-        
-        List<Customer> customers = customerService.getCustomersForEmployee(currentEmployee);
-        List<Product> products = productService.getActiveProducts();
-        
-        model.addAttribute("sale", sale);
-        model.addAttribute("customers", customers);
-        model.addAttribute("products", products);
-        model.addAttribute("currentEmployee", currentEmployee);
-        return "employee/sales/form";
-    }
-
     @PostMapping("/save")
     public String saveSale(@ModelAttribute Sale sale,
                           @RequestParam(required = false) Long customerId,
@@ -223,22 +202,6 @@ public class EmployeeSaleController {
         }
         
         redirectAttributes.addFlashAttribute("message", "Sale saved successfully!");
-        return "redirect:/employee/sales";
-    }
-
-    @GetMapping("/delete/{id}")
-    public String deleteSale(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Employee currentEmployee = getCurrentEmployee();
-        Sale sale = saleService.getSaleById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
-        
-        // Verify the sale belongs to current employee
-        if (!sale.getEmployee().getId().equals(currentEmployee.getId())) {
-            throw new RuntimeException("You do not have access to this sale");
-        }
-        
-        saleService.deleteSale(id);
-        redirectAttributes.addFlashAttribute("message", "Sale deleted successfully!");
         return "redirect:/employee/sales";
     }
 

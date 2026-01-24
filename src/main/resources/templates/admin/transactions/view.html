@@ -72,6 +72,27 @@
                                 <th>Notes:</th>
                                 <td th:text="${transaction.notes}">-</td>
                             </tr>
+                            <tr>
+                                <th>Settlement Status:</th>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${transaction.settled == true} ? 'badge-success' : 'badge-warning'"
+                                          th:text="${transaction.settled == true ? 'Settled' : 'Not Settled'}">Not Settled</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Approval Status:</th>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${transaction.approved == true} ? 'badge-success' :
+                                                          (${transaction.settled == true} ? 'badge-info' : 'badge-secondary')"
+                                          th:text="${transaction.approved == true ? 'Approved' : (transaction.settled == true ? 'Pending Approval' : 'Not Settled')}">Not Settled</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${transaction.approvedBy != null}">
+                                <th>Approved By:</th>
+                                <td th:text="${transaction.approvedBy.fullName}">Approver</td>
+                            </tr>
                         </table>
                     </div>
                 </div>
@@ -90,7 +111,11 @@
                             </tr>
                             <tr>
                                 <th>Product:</th>
-                                <td th:text="${transaction.sale.productName != null ? transaction.sale.productName : (transaction.sale.product != null ? transaction.sale.product.name : '-')}">Product</td>
+                                <td>
+                                    <span th:if="${transaction.sale.productName != null}" th:text="${transaction.sale.productName}">Product Name</span>
+                                    <span th:unless="${transaction.sale.productName != null}" th:if="${transaction.sale.product != null}" th:text="${transaction.sale.product.name}">Product</span>
+                                    <span th:unless="${transaction.sale.productName != null and transaction.sale.product != null}">-</span>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Quantity:</th>
@@ -111,9 +136,33 @@
                             </tr>
                             <tr>
                                 <th>Employee:</th>
-                                <td th:text="${transaction.sale.employee != null ? transaction.sale.employee.name : '-'}">Employee</td>
+                                <td th:text="${transaction.sale.employee != null ? transaction.sale.employee.fullName : '-'}">Employee</td>
                             </tr>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card mt-4">
+                    <div class="card-header">Actions</div>
+                    <div class="card-body">
+                        <div class="action-buttons">
+                            <form th:action="@{/admin/transactions/settle/{id}(id=${transaction.id})}" method="post" style="display: inline;" th:if="${transaction.settled == null or transaction.settled == false}">
+                                <button type="submit" class="btn btn-warning me-2">
+                                    <i class="fas fa-check-circle"></i> Mark as Settled
+                                </button>
+                            </form>
+
+                            <form th:action="@{/admin/transactions/approve/{id}(id=${transaction.id})}" method="post" style="display: inline;" th:if="${transaction.settled == true and (transaction.approved == null or transaction.approved == false)}">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-thumbs-up"></i> Approve Transaction
+                                </button>
+                            </form>
+
+                            <span th:if="${transaction.settled == true and transaction.approved == true}" class="text-success">
+                                <i class="fas fa-check-double"></i> Transaction Approved - Commission Calculated
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -42,7 +42,6 @@
                 <a th:href="@{/employee/sales/{id}/payments/add(id=${sale.id})}" class="btn btn-success" th:if="${remainingAmount.compareTo(new java.math.BigDecimal('0')) > 0}">
                     <i class="fas fa-money-bill-wave"></i> Add Payment
                 </a>
-                <a th:href="@{/employee/sales/edit/{id}(id=${sale.id})}" class="btn btn-warning">Edit</a>
                 <a th:href="@{/employee/sales}" class="btn btn-secondary">Back to List</a>
             </div>
         </div>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Salary Management - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="sidebar-expand-toggle" onclick="toggleSidebar()" title="Expand/Collapse Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="company-name">Potens Green</div>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </header>
+        <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+        <main class="main-content">
+            <div class="container">
+        <div th:if="${message}" class="alert alert-success">
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-money-bill-wave"></i> Salary Management - <span th:text="${employee.fullName}">Employee Name</span></h1>
+            <a th:href="@{/admin/salary-management}" class="btn btn-secondary">Back to List</a>
+        </div>
+
+        <!-- Employee Information -->
+        <div class="card mb-4">
+            <div class="card-header">Employee Information</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Employee ID:</th>
+                                <td><strong th:text="${employee.username != null ? employee.username : 'N/A'}">N/A</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Full Name:</th>
+                                <td th:text="${employee.fullName}">Name</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td th:text="${employee.email}">Email</td>
+                            </tr>
+                            <tr>
+                                <th>Hierarchy Level:</th>
+                                <td><span class="badge badge-info" th:text="${employee.hierarchyLevel}">Level</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Base Salary:</th>
+                                <td>₹<span th:text="${employee.salary != null ? #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') : 'N/A'}">N/A</span></td>
+                            </tr>
+                            <tr>
+                                <th>Total Commission Earned:</th>
+                                <td class="text-success">₹<span th:text="${#numbers.formatDecimal(totalCommission, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                            </tr>
+                            <tr>
+                                <th>Current Month Salary:</th>
+                                <td class="text-primary">₹<span th:text="${#numbers.formatDecimal(currentMonthSalary, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Targets and Commission -->
+        <div class="card mb-4">
+            <div class="card-header">Sales Performance & Commission</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" th:if="${salesTargets != null and !salesTargets.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Period</th>
+                                <th>Target Units</th>
+                                <th>Achieved Amount</th>
+                                <th>Commission Earned</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="target : ${salesTargets}">
+                                <td>
+                                    <strong th:text="${target.product != null ? target.product.name + ' (' + target.product.productId + ')' : 'General'}">Product</strong>
+                                </td>
+                                <td th:text="${#temporals.format(target.periodStart, 'MMM yyyy')}">Period</td>
+                                <td><strong th:text="${target.targetUnits != null ? target.targetUnits : '-'}">-</strong> units</td>
+                                <td>₹<span th:text="${#numbers.formatDecimal(target.achievedAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                                <td class="text-success">₹<span th:text="${target.commissionAmount != null ? #numbers.formatDecimal(target.commissionAmount, 0, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span></td>
+                                <td>
+                                    <span class="badge" th:classappend="${target.progressPercentage.intValue() >= 100} ? 'badge-success' : 'badge-warning'"
+                                          th:text="${target.progressPercentage.intValue() >= 100 ? 'Target Achieved' : 'In Progress'}">Status</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${salesTargets == null or salesTargets.isEmpty()}" class="empty-state">
+                    <p>No sales targets found for this employee.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary Calculation -->
+        <div class="card">
+            <div class="card-header">Salary Calculation & Release</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form th:action="@{/admin/salary-management/calculate-salary/{id}(id=${employee.id})}" method="post">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Base Salary</label>
+                                        <input type="number" step="0.01" class="form-control" name="baseSalary" required
+                                               th:value="${employee.salary != null ? employee.salary : ''}" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Commission from Sales</label>
+                                        <input type="number" step="0.01" class="form-control"
+                                               th:value="${#numbers.formatDecimal(totalCommission, 0, 'POINT', 2, 'POINT')}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Additional Bonus</label>
+                                        <input type="number" step="0.01" class="form-control" name="additionalBonus" value="0.00" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calculator"></i> Calculate Salary
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Salary Breakdown</h6>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Base Salary:</td>
+                                        <td class="text-end">₹<span th:text="${employee.salary != null ? #numbers.formatDecimal(employee.salary, 0, 'COMMA', 2, 'POINT') : '0.00'}">0.00</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Commission:</td>
+                                        <td class="text-end text-success">₹<span th:text="${#numbers.formatDecimal(totalCommission, 0, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bonus:</td>
+                                        <td class="text-end">₹<span id="bonus-display">0.00</span></td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td><strong>Total:</strong></td>
+                                        <td class="text-end"><strong>₹<span id="total-display" th:text="${#numbers.formatDecimal(currentMonthSalary, 0, 'COMMA', 2, 'POINT')}">0.00</span></strong></td>
+                                    </tr>
+                                </table>
+                                <button class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#releaseSalaryModal">
+                                    <i class="fas fa-paper-plane"></i> Release Salary
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Release Salary Modal -->
+        <div class="modal fade" id="releaseSalaryModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Release Salary</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/admin/salary-management/release-salary/{id}(id=${employee.id})}" method="post">
+                        <div class="modal-body">
+                            <p>Are you sure you want to release the salary for <strong th:text="${employee.fullName}">Employee Name</strong>?</p>
+                            <div class="form-group">
+                                <label class="form-label">Final Salary Amount</label>
+                                <input type="number" step="0.01" class="form-control" name="finalSalary" required
+                                       th:value="${#numbers.formatDecimal(currentMonthSalary, 0, 'POINT', 2, 'POINT')}" min="0">
+                                <small class="form-text text-muted">This amount will be released to the employee</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane"></i> Release Salary
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script>
+        // Update total when bonus changes
+        document.querySelector('input[name="additionalBonus"]').addEventListener('input', function() {
+            const baseSalary = parseFloat('<span th:text="${employee.salary != null ? employee.salary : 0}">0</span>') || 0;
+            const commission = parseFloat('<span th:text="${totalCommission}">0</span>') || 0;
+            const bonus = parseFloat(this.value) || 0;
+            const total = baseSalary + commission + bonus;
+
+            document.getElementById('bonus-display').textContent = bonus.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-display').textContent = total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        });
+    </script>
+</body>
+</html>

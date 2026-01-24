@@ -44,7 +44,17 @@ public class Payment {
     
     @Column(unique = true, length = 20)
     private String invoiceNumber;
-    
+
+    @Column(nullable = false)
+    private Boolean settled = false; // Admin marks transaction as settled
+
+    @Column(nullable = false)
+    private Boolean approved = false; // Reporting manager approves transaction
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private Employee approvedBy; // Who approved the transaction
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -116,5 +126,29 @@ public class Payment {
     
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
+    }
+
+    public Boolean getSettled() {
+        return settled;
+    }
+
+    public void setSettled(Boolean settled) {
+        this.settled = settled;
+    }
+
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
+    }
+
+    public Employee getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(Employee approvedBy) {
+        this.approvedBy = approvedBy;
     }
 }

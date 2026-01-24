@@ -71,21 +71,21 @@ public class EmployeeService {
     private String generateEmployeeId() {
         SecureRandom random = new SecureRandom();
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder employeeId = new StringBuilder("PG");
-        
-        // Generate 6 more alphanumeric characters (total 8: PG + 6 chars)
+        StringBuilder employeeId = new StringBuilder("PGES");
+
+        // Generate 6 more alphanumeric characters (total 10: PGES + 6 chars)
         for (int i = 0; i < 6; i++) {
             employeeId.append(chars.charAt(random.nextInt(chars.length())));
         }
-        
+
         // Ensure uniqueness
         while (employeeRepository.findByUsername(employeeId.toString()) != null) {
-            employeeId = new StringBuilder("PG");
+            employeeId = new StringBuilder("PGES");
             for (int i = 0; i < 6; i++) {
                 employeeId.append(chars.charAt(random.nextInt(chars.length())));
             }
         }
-        
+
         return employeeId.toString();
     }
     
@@ -254,6 +254,16 @@ public class EmployeeService {
         List<Employee> reporting = getAllReportingEmployees(employee);
         ids.addAll(reporting.stream().map(Employee::getId).toList());
         return ids;
+    }
+
+    /**
+     * Gets direct reports (employees who report directly to the given manager)
+     */
+    public List<Employee> getDirectReports(Employee manager) {
+        if (manager == null) {
+            return List.of();
+        }
+        return employeeRepository.findDirectReportsByManagerId(manager.getId());
     }
 }
 
