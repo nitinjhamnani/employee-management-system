@@ -55,11 +55,16 @@ public class CommissionService {
 
     /**
      * Calculate commission amount for a sale
-     * This is a placeholder - you may want to implement custom commission calculation logic
+     * Uses the product's commission settings (FIXED or PERCENTAGE)
      */
     private BigDecimal calculateCommissionAmount(Sale sale) {
-        // For now, using a simple 5% commission on total sale amount
-        // You can customize this based on employee hierarchy, product type, etc.
+        // If sale has a product, use the product's commission calculation
+        if (sale.getProduct() != null) {
+            return sale.getProduct().calculateCommission(sale.getTotalAmount());
+        }
+        
+        // Fallback: if no product, use 5% of total sale amount
+        // This should rarely happen, but provides a default
         return sale.getTotalAmount().multiply(new BigDecimal("0.05"));
     }
 
