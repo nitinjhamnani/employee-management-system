@@ -94,7 +94,7 @@ public class TransactionService {
         employeeIds.add(employee.getId());
         
         // Get all sales made by these employees
-        return paymentRepository.findBySaleEmployeeIdIn(employeeIds);
+        return paymentRepository.findBySaleCreatedByIdIn(employeeIds);
     }
     
     /**
@@ -130,7 +130,7 @@ public class TransactionService {
         // Employee has access if:
         // 1. They made the sale, OR
         // 2. The sale was made by someone in their hierarchy
-        Long saleEmployeeId = transaction.getSale().getEmployee().getId();
+        Long saleEmployeeId = transaction.getSale().getCreatedById();
         
         if (saleEmployeeId.equals(employee.getId())) {
             return true;
@@ -148,39 +148,10 @@ public class TransactionService {
     }
 
     /**
-     * Calculates commission after transaction approval
+     * Handle sale completion check after transaction settlement
      */
-    public void calculateCommissionAfterApproval(Payment payment) {
-        if (payment.getSale() == null || payment.getApproved() == null || !payment.getApproved()) {
-            return;
-        }
-
-        Sale sale = payment.getSale();
-        Employee employee = sale.getEmployee();
-
-        if (employee == null) {
-            return;
-        }
-
-        // Find the sales target for this employee in the current period
-        List<SalesTarget> targets = salesTargetRepository.findByEmployeeAndProductAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
-            employee, sale.getProduct(), sale.getSaleDate(), sale.getSaleDate());
-
-        if (!targets.isEmpty()) {
-            SalesTarget target = targets.get(0); // Take the first one
-
-            // Calculate commission if target is achieved
-            if (target.getProgressPercentage() != null && target.getProgressPercentage().intValue() >= 100) {
-                // Commission = (Achieved Amount × Commission Rate) / 100
-                BigDecimal commissionAmount = target.getAchievedAmount()
-                    .multiply(target.getCommissionRate())
-                    .divide(BigDecimal.valueOf(100));
-
-                // Update the target with commission amount
-                target.setCommissionAmount(target.getCommissionAmount() != null ?
-                    target.getCommissionAmount().add(commissionAmount) : commissionAmount);
-                salesTargetRepository.save(target);
-            }
-        }
+    public void calculateCommissionAfterSettlement(Payment payment) {
+        // Payment settlement logic is now handled by SaleService.updatePaymentStatus()
+        // which is called when payments are added or updated
     }
 }

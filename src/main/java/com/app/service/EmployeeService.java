@@ -1,6 +1,7 @@
 package com.app.service;
 
 import com.app.model.Employee;
+import com.app.model.Sale;
 import com.app.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -190,6 +191,20 @@ public class EmployeeService {
         return TYPE_TO_LABEL.getOrDefault(type, type);
     }
     
+    /**
+     * Format hierarchy level for display
+     */
+    public String formatHierarchyLevel(String hierarchyLevel) {
+        if (hierarchyLevel == null) return "";
+        return switch (hierarchyLevel) {
+            case "PROMOTER" -> "Promoter";
+            case "ZONAL_HEAD" -> "Zonal Head";
+            case "CLUSTER_HEAD" -> "Cluster Head";
+            case "AREA_SALES_MANAGER" -> "Area Sales Manager";
+            default -> hierarchyLevel;
+        };
+    }
+    
     public boolean emailExists(String email) {
         return employeeRepository.findByEmail(email) != null;
     }
@@ -220,6 +235,23 @@ public class EmployeeService {
     public Optional<Employee> getEmployeeByUsername(String username) {
         Employee employee = employeeRepository.findByUsername(username);
         return Optional.ofNullable(employee);
+    }
+    
+    /**
+     * Verify if the provided password matches the employee's current password
+     */
+    public boolean verifyPassword(Employee employee, String rawPassword) {
+        return passwordEncoder.matches(rawPassword, employee.getPassword());
+    }
+    
+    /**
+     * Reset password for an employee
+     */
+    public void resetPassword(Long employeeId, String newPassword) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+        employee.setPassword(passwordEncoder.encode(newPassword));
+        employeeRepository.save(employee);
     }
     
     /**
@@ -264,6 +296,37 @@ public class EmployeeService {
             return List.of();
         }
         return employeeRepository.findDirectReportsByManagerId(manager.getId());
+    }
+
+    /**
+     * Traverses up the hierarchy from the given employee and sets the appropriate hierarchy IDs in the sale.
+     * This method finds the first employee of each type in the reporting chain.
+     */
+    public void setSaleHierarchyFields(Sale sale, Employee employee) {
+        if (sale == null || employee == null) {
+            return;
+        }
+
+        // Start with the current employee and traverse up the hierarchy
+        Employee current = employee;
+
+        // Traverse up the hierarchy to find each role
+        while (current != null) {
+            String level = current.getHierarchyLevel();
+
+            if ("PROMOTER".equals(level) && sale.getPromoterId() == null) {
+                sale.setPromoterId(current.getId());
+            } else if ("ZONAL_HEAD".equals(level) && sale.getZonalHeadId() == null) {
+                sale.setZonalHeadId(current.getId());
+            } else if ("CLUSTER_HEAD".equals(level) && sale.getClusterHeadId() == null) {
+                sale.setClusterHeadId(current.getId());
+            } else if ("AREA_SALES_MANAGER".equals(level) && sale.getAsmId() == null) {
+                sale.setAsmId(current.getId());
+            }
+
+            // Move to the next level up in the hierarchy
+            current = current.getReportingManager();
+        }
     }
 }
 

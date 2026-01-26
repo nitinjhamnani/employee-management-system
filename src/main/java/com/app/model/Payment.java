@@ -48,12 +48,9 @@ public class Payment {
     @Column(nullable = false)
     private Boolean settled = false; // Admin marks transaction as settled
 
-    @Column(nullable = false)
-    private Boolean approved = false; // Reporting manager approves transaction
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approved_by")
-    private Employee approvedBy; // Who approved the transaction
+    @JoinColumn(name = "settled_by_admin")
+    private Admin settledBy; // Who settled the transaction (admin only)
 
     // Getters and Setters
     public Long getId() {
@@ -136,19 +133,11 @@ public class Payment {
         this.settled = settled;
     }
 
-    public Boolean getApproved() {
-        return approved;
+    public Admin getSettledBy() {
+        return settledBy;
     }
 
-    public void setApproved(Boolean approved) {
-        this.approved = approved;
-    }
-
-    public Employee getApprovedBy() {
-        return approvedBy;
-    }
-
-    public void setApprovedBy(Employee approvedBy) {
-        this.approvedBy = approvedBy;
+    public void setSettledBy(Admin settledBy) {
+        this.settledBy = settledBy;
     }
 }

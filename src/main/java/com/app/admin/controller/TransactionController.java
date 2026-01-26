@@ -1,9 +1,12 @@
 package com.app.admin.controller;
 
+import com.app.model.Admin;
 import com.app.model.Employee;
 import com.app.model.Payment;
+import com.app.service.AdminService;
 import com.app.service.EmployeeService;
 import com.app.service.TransactionService;
+import com.app.service.SaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +31,12 @@ public class TransactionController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private AdminService adminService;
+
+    @Autowired
+    private SaleService saleService;
     
     @GetMapping
     public String listTransactions(Model model, 
@@ -79,7 +88,16 @@ public class TransactionController {
         }
         
         Payment transaction = transactionOpt.get();
+
+        // Get the employee who created the sale
+        Employee createdByEmployee = null;
+        if (transaction.getSale() != null) {
+            createdByEmployee = employeeService.getEmployeeById(transaction.getSale().getCreatedById())
+                    .orElse(null);
+        }
+
         model.addAttribute("transaction", transaction);
+        model.addAttribute("createdByEmployee", createdByEmployee);
         return "admin/transactions/view";
     }
     
@@ -105,116 +123,40 @@ public class TransactionController {
             }
 
             Payment transaction = transactionOpt.get();
+
+            // Get current admin who is settling
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+
+            Optional<Admin> settlerOpt = adminService.getAdminByUsername(username);
+            if (settlerOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Admin not found");
+                return "redirect:/admin/transactions/view/" + id;
+            }
+
+            Admin settler = settlerOpt.get();
+
+            // Generate invoice number if not already present
+            if (transaction.getInvoiceNumber() == null || transaction.getInvoiceNumber().isEmpty()) {
+                String invoiceNumber = transactionService.generateInvoiceNumber();
+                transaction.setInvoiceNumber(invoiceNumber);
+            }
+
+            // Mark as settled and track who did it
             transaction.setSettled(true);
+            transaction.setSettledBy(settler);
             transactionService.saveTransaction(transaction);
+
+            // Update payment status and check if sale should be completed
+            if (transaction.getSale() != null) {
+                saleService.updatePaymentStatus(transaction.getSale());
+            }
 
             redirectAttributes.addFlashAttribute("message", "Transaction marked as settled successfully");
             return "redirect:/admin/transactions/view/" + id;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error settling transaction: " + e.getMessage());
             return "redirect:/admin/transactions";
-        }
-    }
-
-    @PostMapping("/approve/{id}")
-    public String approveTransaction(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            Optional<Payment> transactionOpt = transactionService.getTransactionById(id);
-            if (transactionOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Transaction not found");
-                return "redirect:/admin/transactions";
-            }
-
-            Payment transaction = transactionOpt.get();
-
-            // Check if transaction is settled first
-            if (!Boolean.TRUE.equals(transaction.getSettled())) {
-                redirectAttributes.addFlashAttribute("error", "Transaction must be settled before approval");
-                return "redirect:/admin/transactions/view/" + id;
-            }
-
-            // Get current admin/employee who is approving
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
-
-            Optional<Employee> approverOpt = employeeService.getEmployeeByUsername(username);
-            if (approverOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Approver not found");
-                return "redirect:/admin/transactions/view/" + id;
-            }
-
-            Employee approver = approverOpt.get();
-
-            // Check if approver can approve this transaction
-            if (!canApproveTransaction(transaction, approver)) {
-                redirectAttributes.addFlashAttribute("error", "You are not authorized to approve this transaction");
-                return "redirect:/admin/transactions/view/" + id;
-            }
-
-            // Approve the transaction
-            transaction.setApproved(true);
-            transaction.setApprovedBy(approver);
-            transactionService.saveTransaction(transaction);
-
-            // Calculate commission after approval
-            transactionService.calculateCommissionAfterApproval(transaction);
-
-            redirectAttributes.addFlashAttribute("message", "Transaction approved successfully");
-            return "redirect:/admin/transactions/view/" + id;
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error approving transaction: " + e.getMessage());
-            return "redirect:/admin/transactions";
-        }
-    }
-
-    private boolean canApproveTransaction(Payment transaction, Employee approver) {
-        // For admin users, allow approval of all transactions
-        if (approver.getUsername().startsWith("admin")) {
-            return true;
-        }
-
-        // For employee users, check hierarchy
-        if (transaction.getSale() != null && transaction.getSale().getEmployee() != null) {
-            Employee saleEmployee = transaction.getSale().getEmployee();
-
-            // Check if approver is in the hierarchy of the sale employee
-            return isInReportingHierarchy(saleEmployee, approver);
-        }
-
-        return false;
-    }
-
-    private boolean isInReportingHierarchy(Employee employee, Employee potentialManager) {
-        Employee current = employee;
-
-        // Traverse up the hierarchy
-        while (current != null) {
-            if (current.getReportingManager() != null && current.getReportingManager().getId().equals(potentialManager.getId())) {
-                return true;
-            }
-
-            // For ASM, any higher level manager can approve
-            if ("AREA_SALES_MANAGER".equals(current.getHierarchyLevel())) {
-                // Any manager above ASM level can approve
-                if (potentialManager.getHierarchyLevel() != null &&
-                    getHierarchyLevelOrder(potentialManager.getHierarchyLevel()) < getHierarchyLevelOrder("AREA_SALES_MANAGER")) {
-                    return true;
-                }
-            }
-
-            current = current.getReportingManager();
-        }
-
-        return false;
-    }
-
-    private int getHierarchyLevelOrder(String hierarchyLevel) {
-        switch (hierarchyLevel) {
-            case "PROMOTER": return 1;
-            case "ZONAL_HEAD": return 2;
-            case "CLUSTER_HEAD": return 3;
-            case "AREA_SALES_MANAGER": return 4;
-            default: return 5;
         }
     }
 }

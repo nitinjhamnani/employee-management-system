@@ -44,7 +44,7 @@ public class SaleController {
         if (employeeId != null && startDate != null && endDate != null) {
             sales = saleService.getSalesByDateRange(startDate, endDate)
                     .stream()
-                    .filter(s -> s.getEmployee().getId().equals(employeeId))
+                    .filter(s -> s.getCreatedById().equals(employeeId))
                     .toList();
             model.addAttribute("selectedEmployeeId", employeeId);
         } else if (employeeId != null) {
@@ -85,7 +85,9 @@ public class SaleController {
         if (employeeId != null) {
             Employee employee = employeeService.getEmployeeById(employeeId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + employeeId));
-            sale.setEmployee(employee);
+            sale.setCreatedById(employee.getId());
+            // Set hierarchy fields based on employee hierarchy
+            employeeService.setSaleHierarchyFields(sale, employee);
         }
         
         if (customerId != null) {
@@ -120,8 +122,13 @@ public class SaleController {
 
         BigDecimal remainingAmount = sale.getTotalAmount().subtract(paidAmount);
 
+        // Get the employee who created this sale
+        Employee createdByEmployee = employeeService.getEmployeeById(sale.getCreatedById())
+                .orElse(null);
+
         model.addAttribute("sale", sale);
         model.addAttribute("transactions", transactions);
+        model.addAttribute("createdByEmployee", createdByEmployee);
         model.addAttribute("paidAmount", paidAmount);
         model.addAttribute("remainingAmount", remainingAmount);
 
