@@ -46,17 +46,42 @@ public class EmployeeService {
             // Set password same as employee ID
             employee.setPassword(passwordEncoder.encode(employeeId));
         } else if (employee.getId() != null) {
-            // For existing employees, only encode password if it's being changed and not already encoded
-            if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
-                // Check if password is already encoded (starts with $2a$ or $2b$)
-                if (!employee.getPassword().startsWith("$2a$") && !employee.getPassword().startsWith("$2b$")) {
-                    employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+            // For existing employees, preserve username and password if not provided
+            Optional<Employee> existingEmployee = employeeRepository.findById(employee.getId());
+            if (existingEmployee.isPresent()) {
+                Employee existing = existingEmployee.get();
+                
+                // Preserve username if it's null or empty in the form submission
+                if (employee.getUsername() == null || employee.getUsername().isEmpty()) {
+                    // Use existing username if it exists
+                    if (existing.getUsername() != null && !existing.getUsername().isEmpty()) {
+                        employee.setUsername(existing.getUsername());
+                    } else {
+                        // One-time generation for employees that somehow don't have a username
+                        // This should rarely happen, but ensures data integrity
+                        String employeeId = generateEmployeeId();
+                        employee.setUsername(employeeId);
+                        // Also set password if it doesn't exist
+                        if (existing.getPassword() == null || existing.getPassword().isEmpty()) {
+                            employee.setPassword(passwordEncoder.encode(employeeId));
+                        }
+                    }
                 }
-            } else {
-                // If password is empty during edit, don't change it - load existing password
-                Optional<Employee> existingEmployee = employeeRepository.findById(employee.getId());
-                if (existingEmployee.isPresent()) {
-                    employee.setPassword(existingEmployee.get().getPassword());
+                // Note: If username is provided in form and differs from existing, we preserve existing (don't allow changes)
+                else if (!employee.getUsername().equals(existing.getUsername())) {
+                    // Username should never change once created - restore original
+                    employee.setUsername(existing.getUsername());
+                }
+                
+                // For password: only encode if it's being changed and not already encoded
+                if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
+                    // Check if password is already encoded (starts with $2a$ or $2b$)
+                    if (!employee.getPassword().startsWith("$2a$") && !employee.getPassword().startsWith("$2b$")) {
+                        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+                    }
+                } else {
+                    // If password is empty during edit, preserve existing password
+                    employee.setPassword(existing.getPassword());
                 }
             }
         }
