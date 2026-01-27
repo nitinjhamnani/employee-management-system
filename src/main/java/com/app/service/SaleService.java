@@ -248,12 +248,20 @@ public class SaleService {
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new IllegalArgumentException("Sale not found"));
         
+        // Validate transaction ID uniqueness if provided
+        if (transactionId != null && !transactionId.trim().isEmpty()) {
+            Payment existingPayment = paymentRepository.findByTransactionId(transactionId.trim());
+            if (existingPayment != null) {
+                throw new IllegalArgumentException("Duplicate transaction reference. This transaction ID has already been used for another payment.");
+            }
+        }
+        
         Payment payment = new Payment();
         payment.setSale(sale);
         payment.setAmount(amount);
         payment.setPaymentDate(LocalDateTime.now());
         payment.setTransactionMode(transactionMode);
-        payment.setTransactionId(transactionId);
+        payment.setTransactionId(transactionId != null ? transactionId.trim() : null);
         payment.setNotes(notes);
 
         // Note: Invoice number will be generated when payment is settled by admin

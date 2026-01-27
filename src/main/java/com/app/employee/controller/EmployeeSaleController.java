@@ -10,6 +10,7 @@ import com.app.service.CustomerService;
 import com.app.service.ProductService;
 import com.app.service.EmployeeService;
 import com.app.service.CommissionService;
+import com.app.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +42,9 @@ public class EmployeeSaleController {
 
     @Autowired
     private CommissionService commissionService;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     private Employee getCurrentEmployee() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -216,8 +220,19 @@ public class EmployeeSaleController {
         
         // Add payment if provided
         if (paymentAmount != null && paymentAmount.compareTo(BigDecimal.ZERO) > 0 && transactionMode != null && !transactionMode.isEmpty()) {
+            // Validate transaction ID uniqueness if provided
+            if (transactionId != null && !transactionId.trim().isEmpty()) {
+                Payment existingPayment = paymentRepository.findByTransactionId(transactionId.trim());
+                if (existingPayment != null) {
+                    redirectAttributes.addFlashAttribute("error", "Sale saved but payment could not be added: Duplicate transaction reference. This transaction ID has already been used for another payment.");
+                    return "redirect:/employee/sales";
+                }
+            }
+            
             try {
                 saleService.addPayment(savedSale.getId(), paymentAmount, transactionMode, transactionId, paymentNotes, dueDate);
+            } catch (IllegalArgumentException e) {
+                redirectAttributes.addFlashAttribute("error", "Sale saved but payment could not be added: " + e.getMessage());
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", "Sale saved but payment could not be added: " + e.getMessage());
             }
@@ -287,9 +302,23 @@ public class EmployeeSaleController {
             return "redirect:/employee/sales/" + id + "/payments/add";
         }
         
-        saleService.addPayment(id, amount, transactionMode, transactionId, notes, dueDate);
-        redirectAttributes.addFlashAttribute("message", "Payment added successfully!");
-        return "redirect:/employee/sales/view/" + id;
+        // Validate transaction ID uniqueness if provided
+        if (transactionId != null && !transactionId.trim().isEmpty()) {
+            Payment existingPayment = paymentRepository.findByTransactionId(transactionId.trim());
+            if (existingPayment != null) {
+                redirectAttributes.addFlashAttribute("error", "Duplicate transaction reference. This transaction ID has already been used for another payment.");
+                return "redirect:/employee/sales/" + id + "/payments/add";
+            }
+        }
+        
+        try {
+            saleService.addPayment(id, amount, transactionMode, transactionId, notes, dueDate);
+            redirectAttributes.addFlashAttribute("message", "Payment added successfully!");
+            return "redirect:/employee/sales/view/" + id;
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/employee/sales/" + id + "/payments/add";
+        }
     }
 
     @PostMapping("/approve-commission/{commissionId}")

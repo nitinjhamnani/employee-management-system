@@ -15,6 +15,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findBySaleId(Long saleId);
     Payment findByInvoiceNumber(String invoiceNumber);
     
+    /**
+     * Find payment by transaction ID (for duplicate validation)
+     * Only checks non-null and non-empty transaction IDs
+     */
+    Payment findByTransactionId(String transactionId);
+    
     @Query("SELECT p FROM Payment p JOIN p.sale s WHERE s.createdById = :employeeId")
     List<Payment> findBySaleCreatedById(@Param("employeeId") Long employeeId);
 
