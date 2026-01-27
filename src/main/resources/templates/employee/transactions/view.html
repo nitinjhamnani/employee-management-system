@@ -46,9 +46,7 @@
                             <tr>
                                 <th>Transaction Mode:</th>
                                 <td>
-                                    <span class="badge" 
-                                          th:classappend="${transaction.transactionMode == 'CASH'} ? 'badge-success' : 
-                                                          (${transaction.transactionMode == 'UPI'} ? 'badge-info' : 'badge-primary')"
+                                    <span class="badge badge-info"
                                           th:text="${transaction.transactionMode}">CASH</span>
                                 </td>
                             </tr>

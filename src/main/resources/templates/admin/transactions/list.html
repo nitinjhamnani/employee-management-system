@@ -74,9 +74,7 @@
                             <td>Employee</td>
                             <td><strong>₹<span th:text="${#numbers.formatDecimal(transaction.amount, 0, 'COMMA', 2, 'POINT')}">0.00</span></strong></td>
                             <td>
-                                <span class="badge"
-                                      th:classappend="${transaction.transactionMode == 'CASH'} ? 'badge-success' :
-                                                      (${transaction.transactionMode == 'UPI'} ? 'badge-info' : 'badge-primary')"
+                                <span class="badge badge-info"
                                       th:text="${transaction.transactionMode}">CASH</span>
                             </td>
                             <td>
