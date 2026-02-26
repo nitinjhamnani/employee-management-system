@@ -188,7 +188,8 @@ public class EmployeeSalesTargetController {
             throw new RuntimeException("You can only view sales targets for your direct reports");
         }
         
-        List<SalesTarget> targets = salesTargetService.getSalesTargetsByEmployee(targetEmployee);
+//        List<SalesTarget> targets = salesTargetService.getSalesTargetsByEmployee(targetEmployee);
+        List<SalesTarget> targets = salesTargetService.getSalesTargetsForEmployeeHierarchy(targetEmployee);
         
         model.addAttribute("currentEmployee", currentEmployee);
         model.addAttribute("targetEmployee", targetEmployee);

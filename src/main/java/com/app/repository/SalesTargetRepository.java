@@ -20,5 +20,7 @@ public interface SalesTargetRepository extends JpaRepository<SalesTarget, Long> 
             Employee employee, com.app.model.Product product, LocalDate date1, LocalDate date2);
     Optional<SalesTarget> findByEmployeeIdAndProductIdAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
             Long employeeId, Long productId, LocalDate date, LocalDate date2);
+
+    List<SalesTarget> findByEmployee_IdInOrderByPeriodStartDesc(List<Long> employeeIds);
 }
 
