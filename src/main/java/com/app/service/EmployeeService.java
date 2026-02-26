@@ -314,18 +314,32 @@ public class EmployeeService {
 //    }
 
     public List<Employee> getAllReportingEmployees(Employee manager) {
-        if (manager == null) return List.of();
+        if (manager == null || manager.getId() == null) return List.of();
 
-        List<Employee> all = new java.util.ArrayList<>();
-        List<Employee> direct = employeeRepository.findByReportingManager_Id(manager.getId());
+        List<Employee> result = new java.util.ArrayList<>();
+        java.util.Deque<Employee> q = new java.util.ArrayDeque<>();
 
-        all.addAll(direct);
+        q.add(manager);
 
-        for (Employee d : direct) {
-            all.addAll(getAllReportingEmployees(d));
+        while (!q.isEmpty()) {
+            Employee m = q.poll();
+            List<Employee> direct = employeeRepository.findByReportingManager_Id(m.getId());
+            for (Employee d : direct) {
+                result.add(d);
+                q.add(d);
+            }
         }
-        return all;
+        return result;
     }
+
+    public List<Long> getAllReportingEmployeeIdsIncludingSelf(Employee manager) {
+        List<Long> ids = new java.util.ArrayList<>();
+        ids.add(manager.getId());
+        ids.addAll(getAllReportingEmployees(manager).stream().map(Employee::getId).toList());
+        return ids;
+    }
+
+
     
     /**
      * Gets all employee IDs that report to the given employee (including the employee themselves).
