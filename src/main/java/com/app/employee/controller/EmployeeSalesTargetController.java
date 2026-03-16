@@ -109,9 +109,16 @@ public class EmployeeSalesTargetController {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + employeeId));
         
         // Verify the employee is a direct report
-        if (targetEmployee.getReportingManager() == null || 
-            !targetEmployee.getReportingManager().getId().equals(currentEmployee.getId())) {
-            redirectAttributes.addFlashAttribute("error", "You can only set sales targets for your direct reports");
+//        if (targetEmployee.getReportingManager() == null ||
+//            !targetEmployee.getReportingManager().getId().equals(currentEmployee.getId())) {
+//            redirectAttributes.addFlashAttribute("error", "You can only set sales targets for your direct reports");
+//            return "redirect:/employee/sales-targets";
+//        }
+
+        List<Long> allowedIds = employeeService.getAllReportingEmployeeIds(currentEmployee);
+
+        if (!allowedIds.contains(targetEmployee.getId())) {
+            redirectAttributes.addFlashAttribute("error", "You can only set sales targets for employees in your hierarchy");
             return "redirect:/employee/sales-targets";
         }
         
@@ -202,7 +209,9 @@ public class EmployeeSalesTargetController {
         }
         
 //        List<SalesTarget> targets = salesTargetService.getSalesTargetsByEmployee(targetEmployee);
-        List<SalesTarget> targets = salesTargetService.getSalesTargetsForEmployeeHierarchy(targetEmployee);
+//        List<SalesTarget> targets = salesTargetService.getSalesTargetsForEmployeeHierarchy(targetEmployee);
+
+        List<SalesTarget> targets = salesTargetService.getSalesTargetsByEmployee(targetEmployee);
         
         model.addAttribute("currentEmployee", currentEmployee);
         model.addAttribute("targetEmployee", targetEmployee);

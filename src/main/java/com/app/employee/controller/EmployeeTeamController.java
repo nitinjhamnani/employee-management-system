@@ -61,8 +61,17 @@ public class EmployeeTeamController {
                              @RequestParam(required = false) String search,
                              Model model) {
         ensureCanManage(type);
+        Employee currentEmployee = getCurrentEmployee();
         String hierarchy = employeeService.getHierarchyForType(type);
-        List<Employee> employees = employeeService.searchEmployeesByHierarchyLevel(hierarchy, search);
+        List<Employee> employees = employeeService.getAllReportingEmployees(currentEmployee).stream()
+                .filter(e -> hierarchy.equals(e.getHierarchyLevel()))
+                .filter(e -> search == null || search.isBlank()
+                        || e.getFullName().toLowerCase().contains(search.toLowerCase())
+                        || (e.getEmail() != null && e.getEmail().toLowerCase().contains(search.toLowerCase()))
+                        || (e.getUsername() != null && e.getUsername().toLowerCase().contains(search.toLowerCase()))
+                        || (e.getPhone() != null && e.getPhone().contains(search)))
+                .toList();
+
         model.addAttribute("employees", employees);
         model.addAttribute("search", search);
         addTypeAttributes(model, type);
