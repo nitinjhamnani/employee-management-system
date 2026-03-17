@@ -166,12 +166,23 @@ public class EmployeeService {
         return m > r; // manager must be above reportee
     }
     
+//    private int hierarchyOrder(String level) {
+//        return switch (level) {
+//            case "PROMOTER" -> 1;
+//            case "ZONAL_HEAD" -> 2;
+//            case "CLUSTER_HEAD" -> 3;
+//            case "AREA_SALES_MANAGER" -> 4;
+//            default -> 0;
+//        };
+//    }
+
+
     private int hierarchyOrder(String level) {
         return switch (level) {
-            case "PROMOTER" -> 1;
-            case "ZONAL_HEAD" -> 2;
-            case "CLUSTER_HEAD" -> 3;
-            case "AREA_SALES_MANAGER" -> 4;
+            case "AREA_SALES_MANAGER" -> 1;
+            case "CLUSTER_HEAD" -> 2;
+            case "ZONAL_HEAD" -> 3;
+            case "PROMOTER" -> 4;
             default -> 0;
         };
     }
@@ -283,24 +294,52 @@ public class EmployeeService {
      * Gets all employees that report to the given employee (directly or indirectly).
      * This includes all employees in the hierarchy below the given employee.
      */
+//    public List<Employee> getAllReportingEmployees(Employee manager) {
+//        if (manager == null) {
+//            return List.of();
+//        }
+//        List<Employee> allReporting = new java.util.ArrayList<>();
+//        List<Employee> directReports = employeeRepository.findAll().stream()
+//                .filter(e -> e.getReportingManager() != null && e.getReportingManager().getId().equals(manager.getId()))
+//                .toList();
+//
+//        allReporting.addAll(directReports);
+//
+//        // Recursively get all employees reporting to direct reports
+//        for (Employee directReport : directReports) {
+//            allReporting.addAll(getAllReportingEmployees(directReport));
+//        }
+//
+//        return allReporting;
+//    }
+
     public List<Employee> getAllReportingEmployees(Employee manager) {
-        if (manager == null) {
-            return List.of();
+        if (manager == null || manager.getId() == null) return List.of();
+
+        List<Employee> result = new java.util.ArrayList<>();
+        java.util.Deque<Employee> q = new java.util.ArrayDeque<>();
+
+        q.add(manager);
+
+        while (!q.isEmpty()) {
+            Employee m = q.poll();
+            List<Employee> direct = employeeRepository.findByReportingManager_Id(m.getId());
+            for (Employee d : direct) {
+                result.add(d);
+                q.add(d);
+            }
         }
-        List<Employee> allReporting = new java.util.ArrayList<>();
-        List<Employee> directReports = employeeRepository.findAll().stream()
-                .filter(e -> e.getReportingManager() != null && e.getReportingManager().getId().equals(manager.getId()))
-                .toList();
-        
-        allReporting.addAll(directReports);
-        
-        // Recursively get all employees reporting to direct reports
-        for (Employee directReport : directReports) {
-            allReporting.addAll(getAllReportingEmployees(directReport));
-        }
-        
-        return allReporting;
+        return result;
     }
+
+    public List<Long> getAllReportingEmployeeIdsIncludingSelf(Employee manager) {
+        List<Long> ids = new java.util.ArrayList<>();
+        ids.add(manager.getId());
+        ids.addAll(getAllReportingEmployees(manager).stream().map(Employee::getId).toList());
+        return ids;
+    }
+
+
     
     /**
      * Gets all employee IDs that report to the given employee (including the employee themselves).

@@ -177,5 +177,12 @@ public class SalesTargetService {
             return base;
         }
     }
+
+    public List<SalesTarget> getSalesTargetsForEmployeeHierarchy(Employee employee) {
+        if (employee == null) return List.of();
+        List<Long> ids = employeeService.getAllReportingEmployeeIds(employee);
+        // your method already includes self, so no need to add again if it does
+        return salesTargetRepository.findByEmployee_IdInOrderByPeriodStartDesc(ids);
+    }
 }
 
