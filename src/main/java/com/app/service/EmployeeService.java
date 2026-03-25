@@ -208,13 +208,25 @@ public class EmployeeService {
      * Each role can add only the immediate next level: Promoter -> Zonal Head only;
      * Zonal Head -> Cluster Head only; Cluster Head -> Area Sales Manager only; ASM -> none.
      */
+//    public List<String> getManageableTypesForHierarchy(String hierarchyLevel) {
+//        int order = hierarchyOrder(hierarchyLevel);
+//        if (order >= 4) return List.of(); // AREA_SALES_MANAGER
+//        if (order >= 3) return List.of("area-sales-managers"); // CLUSTER_HEAD -> ASM only
+//        if (order >= 2) return List.of("cluster-heads"); // ZONAL_HEAD -> Cluster Head only
+//        if (order >= 1) return List.of("zonal-heads"); // PROMOTER -> Zonal Head only
+//        return List.of();
+//    }
+
     public List<String> getManageableTypesForHierarchy(String hierarchyLevel) {
-        int order = hierarchyOrder(hierarchyLevel);
-        if (order >= 4) return List.of(); // AREA_SALES_MANAGER
-        if (order >= 3) return List.of("area-sales-managers"); // CLUSTER_HEAD -> ASM only
-        if (order >= 2) return List.of("cluster-heads"); // ZONAL_HEAD -> Cluster Head only
-        if (order >= 1) return List.of("zonal-heads"); // PROMOTER -> Zonal Head only
-        return List.of();
+        if (hierarchyLevel == null) return List.of();
+
+        return switch (hierarchyLevel) {
+            case "PROMOTER" -> List.of("zonal-heads", "cluster-heads", "area-sales-managers");
+            case "ZONAL_HEAD" -> List.of("cluster-heads", "area-sales-managers");
+            case "CLUSTER_HEAD" -> List.of("area-sales-managers");
+            case "AREA_SALES_MANAGER" -> List.of();
+            default -> List.of();
+        };
     }
 
     public String getHierarchyForType(String type) {
