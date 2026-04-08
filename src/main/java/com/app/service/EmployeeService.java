@@ -404,5 +404,49 @@ public class EmployeeService {
             current = current.getReportingManager();
         }
     }
+
+    public List<Employee> getReportingManagerOptionsForEmployeePortal(Employee currentEmployee, String targetHierarchyLevel) {
+        if (currentEmployee == null || currentEmployee.getId() == null || targetHierarchyLevel == null) {
+            return List.of();
+        }
+
+        return switch (targetHierarchyLevel) {
+            case "ZONAL_HEAD" -> {
+                // In employee portal, only promoter can create zonal heads,
+                // and zonal head should report to current promoter only
+                if ("PROMOTER".equals(currentEmployee.getHierarchyLevel())) {
+                    yield List.of(currentEmployee);
+                }
+                yield List.of();
+            }
+
+            case "CLUSTER_HEAD" -> {
+                // Cluster head should report to zonal head(s) inside current user's hierarchy
+                if ("PROMOTER".equals(currentEmployee.getHierarchyLevel())) {
+                    yield getAllReportingEmployees(currentEmployee).stream()
+                            .filter(e -> "ZONAL_HEAD".equals(e.getHierarchyLevel()))
+                            .toList();
+                } else if ("ZONAL_HEAD".equals(currentEmployee.getHierarchyLevel())) {
+                    yield List.of(currentEmployee);
+                }
+                yield List.of();
+            }
+
+            case "AREA_SALES_MANAGER" -> {
+                // ASM should report to cluster head(s) inside current user's hierarchy
+                if ("PROMOTER".equals(currentEmployee.getHierarchyLevel())
+                        || "ZONAL_HEAD".equals(currentEmployee.getHierarchyLevel())) {
+                    yield getAllReportingEmployees(currentEmployee).stream()
+                            .filter(e -> "CLUSTER_HEAD".equals(e.getHierarchyLevel()))
+                            .toList();
+                } else if ("CLUSTER_HEAD".equals(currentEmployee.getHierarchyLevel())) {
+                    yield List.of(currentEmployee);
+                }
+                yield List.of();
+            }
+
+            default -> List.of();
+        };
+    }
 }
 
