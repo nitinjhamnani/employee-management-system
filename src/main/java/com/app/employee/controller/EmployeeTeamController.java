@@ -87,7 +87,9 @@ public class EmployeeTeamController {
         Employee current = getCurrentEmployee();
         employee.setReportingManager(current);
         model.addAttribute("employee", employee);
-        model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
+        //model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(hierarchy));
+        model.addAttribute("managers",
+                employeeService.getReportingManagerOptionsForEmployeePortal(current, hierarchy));
         addTypeAttributes(model, type);
         return "employee/team/form";
     }
@@ -95,11 +97,13 @@ public class EmployeeTeamController {
     @GetMapping("/{type}/edit/{id}")
     public String editForm(@PathVariable String type, @PathVariable Long id, Model model) {
         ensureCanManage(type);
+        Employee current = getCurrentEmployee();
         employeeService.getHierarchyForType(type);
         Employee employee = employeeService.getEmployeeById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID: " + id));
         model.addAttribute("employee", employee);
-        List<Employee> managers = employeeService.getReportingManagerOptionsForAdmin(employee.getHierarchyLevel())
+        List<Employee> managers = employeeService
+                .getReportingManagerOptionsForEmployeePortal(current, employee.getHierarchyLevel())
                 .stream()
                 .filter(e -> !e.getId().equals(id))
                 .toList();
@@ -142,7 +146,9 @@ public class EmployeeTeamController {
         String hierarchy = employeeService.getHierarchyForType(type);
         if (result.hasErrors()) {
             String h = employee.getHierarchyLevel() != null ? employee.getHierarchyLevel() : hierarchy;
-            model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(h));
+//            model.addAttribute("managers", employeeService.getReportingManagerOptionsForAdmin(h));
+            model.addAttribute("managers",
+                    employeeService.getReportingManagerOptionsForEmployeePortal(getCurrentEmployee(), h));
             if (reportingManagerId != null) {
                 employee.setReportingManager(employeeService.getEmployeeById(reportingManagerId).orElse(null));
             } else if (employee.getId() == null) {
